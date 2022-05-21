@@ -91,7 +91,7 @@ An example of flow graph is shown below:
 
 There is one thing interesting need to mention here. So the source code is below:
 
-\begin{lstlisting}[language=C, caption=An example]
+\begin{lstlisting}[language=C,frame=single, caption=An example]
 if x { 
     ...
     return;
@@ -135,7 +135,7 @@ One is called \textbf{common subexpression elimination}. Subexpressions are some
  right hand of the instructions. Common subexpressions are subexpression that occur many times where the operands have not 
  changed.
  
-\begin{lstlisting}[language=C, caption=Subexpression example,label=lst:subexp]
+\begin{lstlisting}[language=C, frame=single,caption=Subexpression example,label=lst:subexp]
 a = b + c;
 d = b + c;
 \end{lstlisting}
@@ -144,7 +144,7 @@ In the example \ref{lst:subexp}, \texttt{b + c} is so called coomon subexpressio
 common subexpression with an assign expression. 
 
 
-\begin{lstlisting}[language=C, caption=code snippet applied common subexpression elimination to \ref{lst:subexp},label=lst:transsubexpr]
+\begin{lstlisting}[language=C, frame=single,caption=code snippet applied common subexpression elimination to \ref{lst:subexp},label=lst:transsubexpr]
     a = b + c;
     d = a
 \end{lstlisting}
@@ -181,7 +181,7 @@ In DAG, some of the computation are reused. So we can generate optimizaed code b
 
 The optmized code for the DAG\ref{fig:DAG} is: 
 
-\begin{lstlisting}[language=C, caption=code ,label=lst:dag]
+\begin{lstlisting}[language=C, frame=single,caption=code ,label=lst:dag]
     t1 = b - c;
     t2 = a * t1;
     t3 = a + t2;
@@ -195,7 +195,7 @@ The optmized code for the DAG\ref{fig:DAG} is:
 We have seen that DAGs can be useful in a long arithmetic expression. So how well do DAGs
 perform in sequence of instructions?
 
-\begin{lstlisting}[language=C, caption=code ,label=lst:dagexpr2]
+\begin{lstlisting}[language=C, frame=single,caption=code ,label=lst:dagexpr2]
     a = b + c;
     b = a - d;
     c = b + c;
@@ -214,7 +214,7 @@ The corresponding DAG is shown in \ref{fig:DAG2}.
 Based on the DAG\ref{fig:DAG2}, one optimizaed code is \ref{lst:dagexprop2}
 
 
-\begin{lstlisting}[language=C, caption=code ,label=lst:dagexprop2]
+\begin{lstlisting}[language=C, frame=single,caption=code ,label=lst:dagexprop2]
 a = b+c;
 d = a-d;
 c = d+c;
@@ -240,7 +240,7 @@ value number.
 \subsubsection{Algorithm}
 
 
-\begin{lstlisting}[language=python, caption=code ,label=lst:vna]
+\begin{lstlisting}[language=python, frame=single,caption=code ,label=lst:vna]
 Data structure:
     VALUES = Table of
         expression /* [OP, valnum1, valnum2] */
@@ -263,7 +263,9 @@ For each instruction (dst = src1 OP src2) in execution order
 \end{lstlisting}
 
 
-\subsubsection{example}
+\subsubsection{Example}
+
+
 
 
 
