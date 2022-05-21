@@ -126,10 +126,145 @@ So why do these unreachable nodes appear? The anwser is it is not the job of the
 \subsection{Local optimizations}
 
 Local optimizations are those occur \textbf{within the basic blocks}. 
+
+
+\subsubsection{common subexpression elimination}
+
+There're some types of local optimizations. 
+One is called \textbf{common subexpression elimination}. Subexpressions are some arithmetic expressions that occur on the
+ right hand of the instructions. Common subexpressions are subexpression that occur many times where the operands have not 
+ changed.
+ 
+\begin{lstlisting}[language=C, caption=Subexpression example,label=lst:subexp]
+a = b + c;
+d = b + c;
+\end{lstlisting}
+
+In the example \ref{lst:subexp}, \texttt{b + c} is so called coomon subexpression, we could replace the instruction containing 
+common subexpression with an assign expression. 
+
+
+\begin{lstlisting}[language=C, caption=code snippet applied common subexpression elimination to \ref{lst:subexp},label=lst:transsubexpr]
+    a = b + c;
+    d = a
+\end{lstlisting}
+
+You may wonder why this kind of redundancy can occure in code? Are we programmers stupid to do so? In fact, 
+the redundancy most comes from the stage when compilers  turn your source code. For example, when you use arrays,
+you need to do some arithmetic to generate the address of the array element you are accessing. So every time you referece the same
+array element, compiler will calculate the same address again. Similarly, if you access offsets within fields. Last example is 
+access to parameters in the stack. 
+
+
 \subsection{Abtraction 1:DAG}
+
+DAG is the acronym for Directed Acyclic Graph. The Directed Acyclic Graph (DAG) is used to represent the 
+structure of basic blocks, to visualize the flow of values between basic blocks, and to provide 
+optimization techniques in the basic block. DAG is an efficient method for identifying common 
+sub-expressions.\footnote{copied from \url{https://wildpartyofficial.com/what-is-dag-in-compiler-construction}}
+
+
+
+The parse tree and DAG of the expression \(a + a*(b+c) + (b+c) *d \) is shown in \ref{fig:DAG}.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{DAG.png}
+    \caption{Example of a DAG}
+    \label{fig:DAG}
+\end{figure}
+
+
+
+In DAG, some of the computation are reused. So we can generate optimizaed code based on DAG.
+
+The optmized code for the DAG\ref{fig:DAG} is: 
+
+\begin{lstlisting}[language=C, caption=code ,label=lst:dag]
+    t1 = b - c;
+    t2 = a * t1;
+    t3 = a + t2;
+    t4 = t1 * d;
+    t5 = t3 + t4;
+\end{lstlisting}
+
+
+\subsubsection{How well do DAGs hold up across statements?}
+
+We have seen that DAGs can be useful in a long arithmetic expression. So how well do DAGs
+perform in sequence of instructions?
+
+\begin{lstlisting}[language=C, caption=code ,label=lst:dagexpr2]
+    a = b + c;
+    b = a - d;
+    c = b + c;
+    d = a - d;
+\end{lstlisting}
+
+
+The corresponding DAG is shown in \ref{fig:DAG2}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{dag2.png}
+    \caption{Example of a DAG}
+    \label{fig:DAG2}
+\end{figure}
+
+Based on the DAG\ref{fig:DAG2}, one optimizaed code is \ref{lst:dagexprop2}
+
+
+\begin{lstlisting}[language=C, caption=code ,label=lst:dagexprop2]
+a = b+c;
+d = a-d;
+c = d+c;
+\end{lstlisting}
+
+\ref{lst:dagexprop2} is not correct. B need to be overwritten but not yet. So if using DAGs, you need to be 
+very careful. 
+
+DAGs make sense if you just have one long expression, but once you have sequence of instructions overwriting variables
+, DAGs are less appealing because this abstraction doesn't really include the concept of time.
+
+
 
 
 \subsection{Abtraction 2:Value numbering} 
+
+We have seen drawbacks of DAGs. One way to fix the problem is to attach variable name to latest value. Value numbering is 
+such abstraction.
+
+The idea behind value numbering is there is a mapping between variables(static) to values(dynamic). So common subexpression means same 
+value number.
+
+\subsubsection{Algorithm}
+
+
+\begin{lstlisting}[language=python, caption=code ,label=lst:vna]
+Data structure:
+    VALUES = Table of
+        expression /* [OP, valnum1, valnum2] */
+        var /* name of variable currently holding expr */
+For each instruction (dst = src1 OP src2) in execution order
+    valnum1=var2value(src1); valnum2=var2value(src2)
+
+    IF [OP, valnum1, valnum2] is in VALUES
+        v = the index of expression
+        Replace instruction with: dst = VALUES[v].var
+    ELSE
+        Add
+            expression = [OP, valnum1, valnum2]
+            var = tv
+        to VALUES
+        v = index of new entry; tv is new temporary for v
+        Replace instruction with: tv = VALUES[valnum1].var OP VALUES[valnum2].var
+                                dst = tv
+    set_var2value (dst, v)  
+\end{lstlisting}
+
+
+\subsubsection{example}
+
 
 
 
