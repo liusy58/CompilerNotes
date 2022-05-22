@@ -1,0 +1,42 @@
+\section{Introduction to Data Flow Analysis}
+
+
+\subsection{What is Data Flow Analysis?}
+
+Local Optimizations only consider optimizations within a node in CFG. 
+Data flow analysis will take edges into account, which means composing 
+effects of basic blocks to derive information at basic block boundaries.
+
+
+
+Typically, we will do local optimization for the first step to know what happens in a 
+basic block, step 2 is to do data flow analysis. In he third step, we will go back and 
+revisit the individual instructions inside of the blocks.
+
+
+Data flow analysis is \textbf{flow-sensitive}, which means we take into account
+ the effect of control flow. It is also a \textbf{intraprocedural analysis} which means
+ the analysis is within a procedure.
+
+Here are some examples of optimizations:
+
+\begin{itemize}
+\item \textbf{constant propagation}. Constant propagation is a well-known global flow analysis 
+problem. The goal of constant propagation is to discover values that are constant on all possible 
+executions of a program and to propagate these constant values as far forward through the program 
+as possible. Expressions whose operands are all constants can be evaluated at compile time and the 
+results propagated further.
+
+\item \textbf{common subexpression elimination}
+
+\item \textbf{dead code elimination}. Actually, source code written by programmers doesn't contain
+ a lot of dead code, dead code happens to occur partly because of how the front end translates code into 
+ the IR. Doing optimizations will also turn code into dead.
+
+\end{itemize}
+
+\subsection{Static    Program    vs.    Dynamic    Execution }
+
+Static program 
+
+

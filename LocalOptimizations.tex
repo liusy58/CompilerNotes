@@ -132,8 +132,9 @@ Local optimizations are those occur \textbf{within the basic blocks}.
 
 There're some types of local optimizations. 
 One is called \textbf{common subexpression elimination}. Subexpressions are some arithmetic expressions that occur on the
- right hand of the instructions. Common subexpressions are subexpression that occur many times where the operands have not 
- changed.
+ right hand of the instructions. The goal of this common subexpression elimination is to identify 
+ expressions that are guaranteed to produce identical values at runtime and arrange to only perform 
+ the associated computation once (when the first instance of the expression is encountered).
  
 \begin{lstlisting}[language=C, frame=single,caption=Subexpression example,label=lst:subexp]
 a = b + c;
@@ -150,10 +151,10 @@ common subexpression with an assign expression.
 \end{lstlisting}
 
 You may wonder why this kind of redundancy can occure in code? Are we programmers stupid to do so? In fact, 
-the redundancy most comes from the stage when compilers  turn your source code. For example, when you use arrays,
+the redundancy most comes from the stage when compilers  turn your source code. For example, \textbf{when you use arrays,}
 you need to do some arithmetic to generate the address of the array element you are accessing. So every time you referece the same
-array element, compiler will calculate the same address again. Similarly, if you access offsets within fields. Last example is 
-access to parameters in the stack. 
+array element, compiler will calculate the same address again. Similarly, if you \textbf{access offsets within fields}. Last example is 
+\textbf{access to parameters} in the stack. 
 
 
 \subsection{Abtraction 1:DAG}
@@ -266,9 +267,23 @@ For each instruction (dst = src1 OP src2) in execution order
 \subsubsection{Example}
 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{vne.jpg}
+    \caption{An example of value numbering.}
+    \label{fig:vne}
+\end{figure}
 
-
-
+Figure \ref{fig:vne} shows a concrete example of how VN identifies
+computation redundancies within a basic block. The VN
+processes each instruction statically. It obtains the previously
+computed symbolic value of each operand on the RHS, assigning a unique number on encountering a new operand. Then, it
+hashes the symbolic values assigned to operands together with
+the operator to obtain a symbolic value for the computation.
+If the computed symbolic value for a computation is already
+present in the table of previously computed values, then the
+current computation is redundant. In this basic block, computations on Line 5 and 6 are redundant since the computations
+are already computed by instruction on Line 1 and 2. \footnote{copied from \url{https://www.researchgate.net/publication/283214075_Runtime_Value_Numbering_A_Profiling_Technique_to_Pinpoint_Redundant_Computations}}
 
 
 
