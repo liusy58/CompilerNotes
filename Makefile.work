@@ -313,13 +313,14 @@ endef
 #----------------------------------------------------------------------------
 
 define finish
-  @ln -sf tmp/$@ .
+#  @ln -sf tmp/$@ .
   @echo
   @echo "----- finish ---------------------------------------------------------"
   @echo -n "Start:  "$(START); echo
   @echo -n "Finish: "; date
   @echo -n "Output: "; ls -l tmp/$@
   @echo -n "Target: "
+  @mv tmp/main.pdf ./main.pdf
 endef
 
 

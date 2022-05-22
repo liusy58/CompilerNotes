@@ -16,9 +16,12 @@ revisit the individual instructions inside of the blocks.
 
 Data flow analysis is \textbf{flow-sensitive}, which means we take into account
  the effect of control flow. It is also a \textbf{intraprocedural analysis} which means
- the analysis is within a procedure.
+ the analysis is within a procedure. Data-flow analysis computes its solutions over the paths in
+ a control-flow graph. The well-known, meet-over-all-paths
+ formulation produces safe, precise solutions for general dataflow problems. All paths-whether feasible or infeasible,
+ heavily or rarely executed-contribute equally to a solution. 
 
-Here are some examples of optimizations:
+Here are some examples of intraprocedural optimizations:
 
 \begin{itemize}
 \item \textbf{constant propagation}. Constant propagation is a well-known global flow analysis 
@@ -35,8 +38,10 @@ results propagated further.
 
 \end{itemize}
 
-\subsection{Static    Program    vs.    Dynamic    Execution }
+% \subsection{Static    Program    vs.    Dynamic    Execution }
 
-Static program 
+% Static program 
 
+
+\subsection{}
 
