@@ -91,12 +91,12 @@ Program is statically infinite, but there can be infinite many dynamic execution
 \subsubsection{Data Flow Analysis Schema}
 Before thinking about how to define a dataflow problem, note that there are two kinds of problems:
 \begin{itemize}
-    \item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n.
-    \item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit".
+    \item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n. So if we care about what happened in the past, it's a forward problem.
+    \item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit". So if we care about what will happen in the future, it's a backward problem.
 \end{itemize}    
 
 In what follows, we will assume that we're thinking about a forward problem unless otherwise specified.
-
+ 
 Another way that many common dataflow problems can be categorized is as may problems or must problems. 
 The solution to a "may" problem provides information about what may be true at each program point (e.g., 
 for live-variables analysis, a variable is considered live after node n if its value may be used before 
@@ -176,6 +176,8 @@ operator \(\wedge\) is either union or intersection. These problems are called G
 or bit-vector problems.
 
 
+
+
 \subsection{Reaching Definitions}
 
 The Reaching Definitions Problem is a data-flow problem used to answer the
@@ -185,13 +187,101 @@ from the point immediately following \textit{d} to \textit{p} such that \textit{
 
 
 
+\subsubsection{Iterative   Algorithm}
+
+Here is the iterative  algorithm.
+
+
+
+\begin{algorithm}
+    \caption{Reaching Defintions:Iterative Algorithm}\label{alg:reachingdefiterative}
+    \hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
+   
+    
+    \begin{algorithmic}
+   
+    \State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
+
+    \For{\texttt{each basic block B other than Entry}}
+        \State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
+    \EndFor
+    \While{Changes to any out[] occur}
+        \For{\texttt{each basic block B other than Entry}}
+        \State \texttt{$in[B] =  \cup (out[p])$, for all predecessors p of B}
+        \State \texttt{$out[B] = f_B(in[B])$} \algorithmiccomment{$out[B]=gen[B]\cup (in[B]-kill[B]) $ }
+        \EndFor
+
+    \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
+
+
+
+\subsubsection{ Worklist   Algorithm}
+
+\begin{algorithm}
+    \caption{Reaching Defintions:Worklist Algorithm}\label{alg:reachingdefiterative}
+    \hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
+   
+    
+    \begin{algorithmic}
+   
+    \State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
+    \State \textcolor{blue}{ChangedNodes = N}   
+    \For{\texttt{each basic block B other than Entry}}
+        \State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
+    \EndFor
+    \While{ChangedNodes $\neq \emptyset$}
+        \State \textcolor{blue}{Remove i from ChangedNodes}
+        \State $in[B] =  \cup (out[p])$, for all predecessors p of B
+        \State \textcolor{blue}{$oldout = out[i]$}
+        \State $out[i] = f_i(in[i])$ \algorithmiccomment{$out[i]=gen[i]\cup (in[i]-kill[i]) $ }
+        \If {\textcolor{blue}{oldout} $\neq out[i]$}
+
+            \For{\texttt{all \textcolor{blue}{successors s of i}}}
+                \State \textcolor{blue}{add s to ChangedNodes}
+            \EndFor
+        \EndIf
+
+    \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
 
 
 \subsubsection{Example}
 
 
+\begin{figure}[!htb]
+    \minipage{0.32\textwidth}
+      \includegraphics[width=\linewidth]{rdex1.jpg}
+      \caption{Pass 1}\label{fig:awesome_image1}
+    \endminipage\hfill
+    \minipage{0.32\textwidth}
+      \includegraphics[width=\linewidth]{rdex2.jpg}
+      \caption{Pass 2}\label{fig:awesome_image2}
+    \endminipage\hfill
+    \minipage{0.32\textwidth}%
+      \includegraphics[width=\linewidth]{rdex3.jpg}
+      \caption{Pass 3}\label{fig:awesome_image3}
+    \endminipage
+\end{figure}
 
 
 
+\subsection{ Live    Variable    Analysis   }
+
+In compilers, live variable analysis (or simply liveness analysis)
+ is a classic data-flow analysis to calculate the variables that 
+ are live at each point in the program. A variable is live at 
+ some point if it holds a value that may be needed in the future, 
+ or equivalently if its value may be read before the next time 
+ the variable is written to. \footnote{based on Wikipedia}
+
+\subsubsection{Motivation}
+
+
+For dead code elimination.
 \subsection{}
 
