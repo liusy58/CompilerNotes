@@ -1,13 +1,43 @@
 \section{Introduction to Data Flow Analysis}
 
-\subsection{Structure of data flow analysis}
+\subsection{Motivation for Dataflow Analysis}
+
+Some optimizations\footnote{based on \url{https://pages.cs.wisc.edu/~horwitz/CS704-NOTES/2.DATAFLOW.html}} , however, require more "global" information. 
+For example, consider the code \ref{lst:expr1}
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr1]
+    a = 1;
+    b = 2;
+    c = 3;
+    if (...) x = a + 5;
+    else x = b + 4;
+    c = x + 1;
+\end{lstlisting}
+
+
+In this example, the initial assignment to \textit{c} (at line 3) is useless, and the expression 
+\textit{x + 1} can be simplified to 7, but it is less obvious how a compiler can discover these facts 
+since they cannot be discovered by looking only at one or two consecutive statements. 
+A more global analysis is needed so that the compiler knows at each point in the program:
+\begin{itemize}
+\item    which variables are guaranteed to have constant values, and
+\item    which variables will be used before being redefined.
+\end{itemize}
+
+To discover these kinds of properties, we use dataflow analysis. 
+
+
 
 \subsubsection{What is Data Flow Analysis?}
 
 Local Optimizations only consider optimizations within a node in CFG. 
 Data flow analysis will take edges into account, which means composing 
 effects of basic blocks to derive information at basic block boundaries.
-
+Data-flow analysis is a technique for gathering information about the possible 
+set of values calculated at various points in a computer program. A program's 
+control-flow graph (CFG) is used to determine those parts of a program to which 
+a particular value assigned to a variable might propagate. The information gathered 
+is often used by compilers when optimizing a program. 
 
 
 Typically, we will do local optimization for the first step to know what happens in a 
@@ -55,7 +85,95 @@ Program is statically infinite, but there can be infinite many dynamic execution
  point in the program, combines information of all the instances of the same program point.
 
 
+
+
+
 \subsubsection{Data Flow Analysis Schema}
+Before thinking about how to define a dataflow problem, note that there are two kinds of problems:
+\begin{itemize}
+    \item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n.
+    \item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit".
+\end{itemize}    
+
+In what follows, we will assume that we're thinking about a forward problem unless otherwise specified.
+
+Another way that many common dataflow problems can be categorized is as may problems or must problems. 
+The solution to a "may" problem provides information about what may be true at each program point (e.g., 
+for live-variables analysis, a variable is considered live after node n if its value may be used before 
+being overwritten, while for constant propagation, the pair (x, v) holds before node n if x must have the value v at that point).
+
+Now let's think about how to define a dataflow problem so that it's clear what the (best) solution should be. 
+When we do dataflow analysis "by hand", we look at the CFG and think about:
+
+\begin{itemize}
+    \item What information holds at the start of the program.
+    \item When a node n has more than one incoming edge in the CFG, how to combine the incoming 
+    information (i.e., given the information that holds after each predecessor of n, how to 
+    combine that information to determine what holds before n).
+    \item How the execution of each node changes the information.
+\end{itemize}    
+
+This intuition leads to the following definition. An instance of a dataflow problem includes:
+\begin{itemize}
+    \item a \(CFG\),
+    \item a domain \(D\) of "dataflow facts",
+    \item a dataflow fact "init" (the information true at the start of the program for forward problems, 
+    or at the end of the program for backward problems),
+    \item an operator \(\wedge\) (used to combine incoming information from multiple predecessors),
+    \item for each CFG node n, a dataflow function \(f_n\) :\( D \rightarrow D\) (that defines the effect of 
+    executing n).
+\end{itemize} 
+
+For constant propagation, an individual dataflow fact is a set of pairs of the form (var, val),
+ so the domain of dataflow facts is the set of all such sets of pairs (the power set). 
+ For live-variable analysis, it is the power set of the set of variables in the program.
+
+For both constant propagation and live-variable analysis, the "init" fact is the empty set 
+(no variable starts with a constant value, and no variables are live at the end of the program).
+
+
+
+For constant propagation, the combining operation \(\wedge\) is set intersection. 
+This is because if a node n has two predecessors, p1 and p2, then variable x has value v before 
+node n iff it has value v after both p1 and p2. For live-variable analysis, 
+\(\wedge\) is set union: if a node n has two successors, s1 and s2, then the value of x after n may be 
+used before being overwritten iff that holds either before s1 or before s2. In general, 
+for "may" dataflow problems, \(\wedge\) will be some union-like operator, while it will be an intersection-like 
+operator for "must" problems.
+
+For constant propagation, the dataflow function associated with a CFG node that does not assign 
+to any variable (e.g., a predicate) is the identity function. For a node n that assigns to 
+a variable x, there are two possibilities:
+
+\begin{itemize}
+\item 1. The right-hand side has a variable that is not constant. In this case, the function 
+result is the same as its input except that if variable x was constant the before n, 
+it is not constant after n.
+\item 2. All right-hand-side variables have constant values. In this case, the right-hand side of 
+the assignment is evaluated producing consant-value c, and the dataflow-function result is the 
+same as its input except that it includes the pair (x, c) for variable x (and excludes the pair 
+for x, if any, that was in the input).
+\end{itemize}
+
+
+For live-variable analysis, the dataflow function for each node n has the form: 
+\(f_n(S) = Gen_n \cup (S - KILL_n)\), where \(KILL_n\) is the set of variables defined at node n, 
+and \(GEN_n\) is the set of variables used at node n. In other words, for a node that does not 
+assign to any variable, the variables that are live before n are those that are live after 
+n plus those that are used at n; for a node that assigns to variable x, the variables that are 
+live before n are those that are live after n except x, plus those that are used at n 
+(including x if it is used at n as well as being defined there).
+
+An equivalent way of formulating the dataflow functions for live-variable analysis is: 
+\(f_n(S) = (S \cap NOT-KILL_n) \cup GEN_n\), where \(NOT-KILL_n\) is the set of variables not defined
+ at node n. The advantage of this formulation is that it permits the dataflow facts to be 
+ represented using bit vectors, and the dataflow functions to be implemented using simple 
+ bit-vector operations (and or).
+
+It turns out that a number of interesting dataflow problems have dataflow functions of this 
+same form, where \(GEN_n\) and \(KILL_n\) are sets whose definition depends only on n, and the combining 
+operator \(\wedge\) is either union or intersection. These problems are called GEN/KILL problems, 
+or bit-vector problems.
 
 
 \subsection{Reaching Definitions}
