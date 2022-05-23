@@ -1,7 +1,8 @@
 \section{Introduction to Data Flow Analysis}
 
+\subsection{Structure of data flow analysis}
 
-\subsection{What is Data Flow Analysis?}
+\subsubsection{What is Data Flow Analysis?}
 
 Local Optimizations only consider optimizations within a node in CFG. 
 Data flow analysis will take edges into account, which means composing 
@@ -41,6 +42,37 @@ results propagated further.
 % \subsection{Static    Program    vs.    Dynamic    Execution }
 
 % Static program 
+
+
+
+
+\subsubsection{Static Program vs. Dynamic Execution}
+
+
+Program is statically infinite, but there can be infinite many dynamic execution paths. On one hand, analysis
+ need to be precise, so we will take into account as much dynamic execution as possible. On the other hand, analysis
+ need to do the analysis quickly. For a compromise, the analysis result is \textbf{conservative} and what it does id for each 
+ point in the program, combines information of all the instances of the same program point.
+
+
+\subsubsection{Data Flow Analysis Schema}
+
+
+\subsection{Reaching Definitions}
+
+The Reaching Definitions Problem is a data-flow problem used to answer the
+following questions: Which definitions of a variable \textit{X} reach a given use of \textit{X} in
+an expression? Is \textit{X} used anywhere before it is defined? A definition\textit{d} reaches a point \textit{p} if there exists path 
+from the point immediately following \textit{d} to \textit{p} such that \textit{d} is not killed(overwritten) along that path.
+
+
+
+
+
+\subsubsection{Example}
+
+
+
 
 
 \subsection{}
