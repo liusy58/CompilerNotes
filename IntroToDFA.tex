@@ -79,9 +79,9 @@ results propagated further.
 \subsubsection{Static Program vs. Dynamic Execution}
 
 
-Program is statically infinite, but there can be infinite many dynamic execution paths. On one hand, analysis
+Program is statically finite, but there can be infinite many dynamic execution paths. On one hand, analysis
  need to be precise, so we will take into account as much dynamic execution as possible. On the other hand, analysis
- need to do the analysis quickly. For a compromise, the analysis result is \textbf{conservative} and what it does id for each 
+ need to do the analysis quickly. For a compromise, the analysis result is \textbf{conservative} and what it does is for each 
  point in the program, combines information of all the instances of the same program point.
 
 
@@ -251,7 +251,7 @@ Here is the iterative  algorithm.
 
 
 \subsubsection{Example}
-
+Here comes an example of reaching definition.
 
 \begin{figure}[!htb]
     \minipage{0.32\textwidth}
@@ -281,7 +281,83 @@ In compilers, live variable analysis (or simply liveness analysis)
 
 \subsubsection{Motivation}
 
+Programs may contain 
 
-For dead code elimination.
-\subsection{}
+\begin{itemize}
+\item code which gets executed but which has no useful
+effect on the program's overall result;
+\item occurrences of variables being used before they
+are defined;
+\item many variables which need to be allocated
+registers and/or memory locations for compilation.
 
+\end{itemize}
+
+The concept of variable liveness is useful in dealing 
+with all three of these situations.
+
+
+
+\subsubsection{Problem formulation}
+Liveness is a data-flow property of variables:
+“Is the value of this variable needed?” We therefore 
+usually consider liveness from an instruction's 
+perspective: each instruction (or node of the
+flowgraph) has an associated set of live variables.
+
+
+\subsubsection{Semantic vs. syntactic\footnote{based on slides from Cambridge University}}
+
+
+There are two kinds of variable liveness : Semantic liveness and Syntactic liveness.
+
+
+A variable x is \textbf{semantically} live at a node n if there is
+some execution sequence starting at n whose (externally
+observable) behaviour can be affected by changing the
+value of x. Semantic liveness is concerned with
+the execution behaviour of the program.
+
+A variable is \textbf{semantically} live at a node if there is a
+path to the exit of the flow graph along which its
+value may be used before it is redefined. Syntactic liveness is concerned with properties of
+the syntactic structure of the program.
+
+
+So what is the difference between Semantic liveness and Syntactic liveness? syntactic liveness
+is a computable approximation of semantic liveness.
+
+
+Consider the example 
+
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+    int t = x * y;
+    if ((x+1)*(x+1) == y) {
+     t = 1;
+    }
+    if (x*x + 2*x + 1 != y) {
+     t = 2;
+    }
+    return t;
+\end{lstlisting}
+
+In fact, t is dead in node \texttt{int t = x;} because one of the conditions will be true, 
+so on every execution path t is redefined before it is returned.
+The value assigned by the first instruction is never used.
+
+
+But on read path from \ref{fig:liveex} through the
+flowgraph, t is not
+redefined before it's used,
+so t is syntactically live at
+the first instruction.Note that this path never
+actually occurs during
+execution.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{liveex.png}
+    \caption{CFG}
+    \label{fig:liveex}
+\end{figure}
