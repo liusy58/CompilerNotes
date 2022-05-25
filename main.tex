@@ -20,8 +20,8 @@
 %\include{proofs}
 \usepackage{algorithm}% http://ctan.org/pkg/algorithms
 \usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
-\usepackage{biblatex} %Imports biblatex package
-\addbibresource{mybib.bib} %Import the bibliography file
+\usepackage[style=numeric,sorting=none]{biblatex}
+\addbibresource{main.bib} %Import the bibliography file
 \usepackage{tikz}
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
@@ -86,11 +86,12 @@
 
 % define issue details
 \title{Compiler Optimization Notes}
-\newcommand\thejournalsubtitle{Notes compiled for the Compiler Optimization Course}
+\newcommand\thejournalsubtitle{Notes for the Compiler Optimization Techniques}
 \newcommand\thevolume{}
 \newcommand\theseason{May}
 \newcommand\theyear{2022}
 \newcommand\theissue{\thejournal \ \thevolume \ (\theyear)} 
+
 \newcommand\generaleditor{}
 \newcommand\associateeditor{}
 \sloppy
