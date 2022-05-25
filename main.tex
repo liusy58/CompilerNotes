@@ -20,6 +20,8 @@
 %\include{proofs}
 \usepackage{algorithm}% http://ctan.org/pkg/algorithms
 \usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{mybib.bib} %Import the bibliography file
 \usepackage{tikz}
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
@@ -107,6 +109,7 @@
 
 \maketitle
 
+
 % \include{essays/preface}
 \pagenumbering{arabic}
 
@@ -115,4 +118,9 @@
 \input{Live Variabl Analysis.tex}
 \input{Reaching Definitions.tex}
 \input{Available Expressions Analysis.tex}
+
+\input{LLVM.tex}
+
+\printbibliography
+
 \end{document}
