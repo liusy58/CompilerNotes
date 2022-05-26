@@ -2,7 +2,7 @@
 ### How to build
 
 ```
-make
+make clean && make BIBFILES=main.bib
 ```
 
 
