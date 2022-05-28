@@ -4,100 +4,171 @@
 
 We saw a lot of examples of data flow analysis, eg. reaching definitions etc. Although 
 there were differences between differeent types of data flow analysis, they did share number of 
-things in common. Our goal is to develop a general purpose data flow analysis.
+things in common. Our goal is to develop a general purpose data flow analysis framework.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Having shown several useful examples of the data-flow abstraction, 
-we now study the family of data-flow schemas as a whole, abstractly. 
-We shall answer several basic questions about data-flow algorithms formally:
+There are some questions that we want to answer about a framework that performs data 
+flow analysis.
 
 \begin{itemize}
-
-\item Under what circumstances is the iterative algorithm used in data-flow analysis correct?
-\item How precise is the solution obtained by the iterative algorithm?
-\item Will the iterative algorithm converge?
-\item How fast is the convergence?
+\item Correctness: Do we get a correct answer? 
+\item Precison: How good is the answer? \footnote{We want a safe solution but as precise as possible. }
+\item Covergence: Will the analysis terminate? 
+\item Spped: How fast is the convergence?
 \end{itemize}
 
 
-\subsection{Partial Order}\footnote{Based on \url{https://pages.cs.wisc.edu/~horwitz/CS704-NOTES/2.DATAFLOW.html}}
 
-A binary relation R on a set S is called a partial ordering(poset), or partial order if and only if it is:
+\subsection{A Unified Framework}
+
+Data flow problems are defined by 
+\begin{itemize}
+
+\item Domain of values \( V \)(eg, variable names for liverness, the instruction numbers for reaching definitions)
+\item Meet operator \( V \wedge V \rightarrow V \) to deal with the join nodes.
+\item Initial value. Once we have defined the meet operator, it will tell us how to initialize 
+all of the non-entry or exits nodes and the boundary conditions for entry and exit nodes. 
+\item A set of transfer functions \( V  \rightarrow V \) to define how information flows across basic blocks. 
+\end{itemize}   
+
+
+
+Why we bother to define such a framework?
+\begin{itemize}
+\item First, if meet operator, transfer function and the domains of values are specified in proper way, we will know about 
+correctness, precision and so on. 
+
+\item From prectical engineering perspective, it allows us to reuse code.
+\end{itemize}   
+
+
+\subsection{ Meet Operator }
+
+Meet operator must hold the following properties:
 
 \begin{itemize}
-\item \textbf{Reflexive} \(x \leq x\)
-\item \textbf{Antisymmetric} if \(x \leq y\) and \(y \leq x\) then \(x = y\)
-\item \textbf{Transitive} if \(x \leq y\) and \(y \leq z\) then \(x \leq z\)
-\end{itemize} 
+\item \textbf{commutative}: \(x \wedge y = y = \wedge x\). No ordering in the incoming edges.
+
+\item \textbf{idempotent}: \(x \wedge x =  x\)
+
+\item \textbf{associative }: \(x \wedge( y\wedge z) =  (x \wedge y) \wedge z\)
+
+\item there is a Top element T such that \(x \wedge T = x\). Partly due to the way 
+we initialize everything we need.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{p15.png}
+    \caption{CFMeet OperatorG}
+    \label{fig:p15}
+\end{figure}
 
 
 
-\subsection{Lattices}
-
-A lattice is a poset in which every pair of elements has:
-
+Meet Operator defines a partial ordering on values. This is important in ensuring the analysis converges.
 \begin{itemize}
-\item a Least Upper Bound (the join of the two elements), and
-\item a Greatest Lower Bound (the meet of the two elements).
-\end{itemize}    
+\item \(x \leq y\) if and only if \(x \wedge y = x\).The \(\leq \) not means less or equal to or subset, but it really means lattice inclusion.
+So if \(x \leq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
+\item 
+
+\end{itemize}
+% The \(\leq \) not means less or equal to or subset, but it really means lattice inclusion.
+% So if \(x \leq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
 
 
 
-\subsection{Complete lattices}
 
 
-A complete lattice is a lattice in which all subsets have a greatest lower bound 
-and a least upper bound (the bounds must be in the lattice, but not necessarily 
-in the subsets themselves). Note that Every finite lattice (i.e., S is finite) is complete.
 
 
-\subsection{Monotonic and distributive functions}
-
-A function f: L → L (where L is a lattice) is monotonic iff for all x,y in L: x ⊆ y implies f(x) ⊆ f(y).
-
-A function f: L → L (where L is a lattice) is distributive iff for all x,y in L: f(x meet y) = f(x) meet f(y).
-
-Every distributive function is also monotonic (proving that could be good practice!) but not vice versa. For the GEN/KILL dataflow problems, all dataflow functions are distributive. For constant propagation, all functions are monotonic, but not all functions are distributive.
 
 
-\subsection{Fixed points}
 
-x is a fixed point of function f iff f(x) = x.
 
-\subsection{Meet Operator}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Having shown several useful examples of the data-flow abstraction, 
+% we now study the family of data-flow schemas as a whole, abstractly. 
+% We shall answer several basic questions about data-flow algorithms formally:
+
+% \begin{itemize}
+
+% \item Under what circumstances is the iterative algorithm used in data-flow analysis correct?
+% \item How precise is the solution obtained by the iterative algorithm?
+% \item Will the iterative algorithm converge?
+% \item How fast is the convergence?
+% \end{itemize}
+
+
+% \subsection{Partial Order}\footnote{Based on \url{https://pages.cs.wisc.edu/~horwitz/CS704-NOTES/2.DATAFLOW.html}}
+
+% A binary relation R on a set S is called a partial ordering(poset), or partial order if and only if it is:
+
+% \begin{itemize}
+% \item \textbf{Reflexive} \(x \leq x\)
+% \item \textbf{Antisymmetric} if \(x \leq y\) and \(y \leq x\) then \(x = y\)
+% \item \textbf{Transitive} if \(x \leq y\) and \(y \leq z\) then \(x \leq z\)
+% \end{itemize} 
+
+
+
+% \subsection{Lattices}
+
+% A lattice is a poset in which every pair of elements has:
+
+% \begin{itemize}
+% \item a Least Upper Bound (the join of the two elements), and
+% \item a Greatest Lower Bound (the meet of the two elements).
+% \end{itemize}    
+
+
+
+% \subsection{Complete lattices}
+
+
+% A complete lattice is a lattice in which all subsets have a greatest lower bound 
+% and a least upper bound (the bounds must be in the lattice, but not necessarily 
+% in the subsets themselves). Note that Every finite lattice (i.e., S is finite) is complete.
+
+
+% \subsection{Monotonic and distributive functions}
+
+% A function f: L → L (where L is a lattice) is monotonic iff for all x,y in L: x ⊆ y implies f(x) ⊆ f(y).
+
+% A function f: L → L (where L is a lattice) is distributive iff for all x,y in L: f(x meet y) = f(x) meet f(y).
+
+% Every distributive function is also monotonic (proving that could be good practice!) but not vice versa. For the GEN/KILL dataflow problems, all dataflow functions are distributive. For constant propagation, all functions are monotonic, but not all functions are distributive.
+
+
+% \subsection{Fixed points}
+
+% x is a fixed point of function f iff f(x) = x.
+
+% \subsection{Meet Operator}
 
 
