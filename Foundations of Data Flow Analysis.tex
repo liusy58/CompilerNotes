@@ -42,6 +42,60 @@ correctness, precision and so on.
 \end{itemize}   
 
 
+\subsection{Partial Order}
+
+A relation \(R\) on a set \(S\) is called a \textbf{partial order} if it is
+
+\begin{itemize}
+    \item \textbf{Transitivity} if \(x \preceq y\) and  \(y \preceq z\) then  \(x \preceq z\)
+    \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = z\)
+    \item \textbf{Reflexivity}  \(x = x\)
+\end{itemize}    
+
+\subsection{Lattice}
+
+A lattice is a partially ordered set in which every pair of elements has both a least upper bound (lub)
+ and a greatest lower bound(glb). 
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{p17.png}
+        \caption{This is a lattice example.}
+        \label{fig:p17}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{p16.png}
+        \caption{This is not a lattice example becuasethe pair {b,c} deos not have a lub.}
+        \label{fig:three sin x}
+    \end{subfigure}
+       \caption{Two examples}
+       \label{fig:p16}
+\end{figure}
+
+
+
+
+
+\subsection{Complete Lattice}
+
+A lattice A is called a complete lattice if every subset S of A admits a
+glb and a lub in A.
+
+
+
+\subsection{Semi-Lattice}
+
+A semilattice (or upper semilattice) is a partially ordered set that has a least upper bound for any 
+nonempty finite subset.
+
+
+
+
+
 \subsection{ Meet Operator }
 
 Meet operator must hold the following properties:
@@ -60,21 +114,108 @@ we initialize everything we need.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.3\textwidth]{p15.png}
-    \caption{CFMeet OperatorG}
+    \caption{Meet Operator}
     \label{fig:p15}
 \end{figure}
 
 
 
-Meet Operator defines a partial ordering on values. This is important in ensuring the analysis converges.
-\begin{itemize}
-\item \(x \leq y\) if and only if \(x \wedge y = x\).The \(\leq \) not means less or equal to or subset, but it really means lattice inclusion.
-So if \(x \leq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
-\item 
-
+Meet Operator defines a partial ordering on values. This is important in ensuring the analysis converges. So 
+what does it mean ? \(x \preceq y\) if and only if \(x \wedge y = x\). The \(\preceq \) not means less or equal to or subset, but it really means lattice inclusion.
+So if \(x \preceq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
+Partial  ordering will also lead to some other properties
+    \begin{itemize}
+        \item \textbf{Transitivity} if \(x \preceq y\) and  \(y \preceq z\) then  \(x \preceq z\)
+        \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = z\)
+        \item \textbf{Reflexivity}  \(x = x\)
 \end{itemize}
-% The \(\leq \) not means less or equal to or subset, but it really means lattice inclusion.
-% So if \(x \leq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{p18.png}
+    \caption{Different meet operator defines different lattice}
+    \label{fig:p15}
+\end{figure}
+
+
+% \subsection{Partial Order}
+
+
+For our data flow analysis, values and meet operator define a semi-lattice, which means \(\top\) exits, but not necessarily \(	\bot\).
+
+
+
+
+
+\subsection{Descending Chain}
+
+The height of a lattice is the largest number of \(\succ \) relations that will fit in a descending chain. eg. \(x_0 \succ x_1 \succ x_2 \succ \dots\)
+
+So, for reaching definitions, the height is the number of definitions.
+
+Finite descending chain will ensure the convergence. If we don't finite descending chain, there is a possibility that
+the analysis will never terminate. But a infinite lattice still can have a finite descending chain. I want to note that 
+infinite lattice doesn't always mean a non-convergence.
+
+So consider the constant propogation, the infinite lattice has finite descending chain, so this can converge.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{p19.png}
+    \caption{The lattice of constant propogation}
+    \label{fig:p19}
+\end{figure}
+
+
+\subsection{Transfer Functions}
+
+Tranfer function dicates how information propagates across a basic block. 
+So what we need for our transfer function? \textbf{First}, it must have an identity function which means 
+there exists an \(f\) such that \(f(x) = x \) for all \(x\). For example, in Reaching Definitions and Liveness, when 
+\(Gen, KILL = \Phi \), this transfer function satisfies \(f(x) = x \). \textbf{Second}, when we compose transfer functions, 
+it must be consitent with the transfer function. So if \(f_1,f_2 \in F\), the  \(f_1	\cdot f_2 \in F\).
+
+
+For example, 
+\begin{align*} 
+    f_1(x) &= G_1 \cup (x - K_1)\\
+    f_2(x) &= G_2 \cup (x - K_2) \\
+    f_2(f_1(x)) &= G_2 \cup [(G_1 \cup (x - K_1)) - K_2] \\
+    & = [G_2 \cup (G_1 - K_2)] \cup [x-(K_1 \cup K_2)] \\
+    G &= G_2 \cup (G_1 - K_2) \\
+    K &= K_1 \cup K_2
+\end{align*}
+
+
+\subsection{Monotonicity}
+
+
+A framework \((F,V,\wedge)\) is monotone if and only if \(x \preceq y \) implies \(f(x) \preceq f(y)\). This means that
+a "smaller(more conservative) or equal" input to the same function will always give a "smaller(more conservative)  or equal" output.
+
+
+
+Alternatively, \((F,V,\wedge)\) is monotone if and only if \(  f(x \wedge y) \preceq f(x) \wedge f(y)\). So  merge input, then apply \(f\) is small(more conservative)  or equal to apply the transfer
+function individually and then merge the result. Values are defined by semi-lattice, the meet operator only ever moves down the lattice from top towards the bottom. 
+So we need to constrain the transfer function.
+
+
+
+\subsection{}
+
+% \[
+% f_1(x) = G_1 \cup (x - K_1)   
+% f_2(x) = G_2 \cup (x - K_2)
+% f_2(f_1(x)) = G_2 \cup [(G_1 \cup (x - K_1)) - K_2] = [G_2 \cup (G_1 - K_2)] \cup [X-(K_1 \cuo K_2)]
+
+% \]
+
+
+
+
+ % The \(\preceq \) not means less or equal to or subset, but it really means lattice inclusion.
+% So if \(x \preceq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
 
 
 
@@ -130,9 +271,9 @@ So if \(x \leq y\), this means x is more conservative or constrained. In another
 % A binary relation R on a set S is called a partial ordering(poset), or partial order if and only if it is:
 
 % \begin{itemize}
-% \item \textbf{Reflexive} \(x \leq x\)
-% \item \textbf{Antisymmetric} if \(x \leq y\) and \(y \leq x\) then \(x = y\)
-% \item \textbf{Transitive} if \(x \leq y\) and \(y \leq z\) then \(x \leq z\)
+% \item \textbf{Reflexive} \(x \preceq x\)
+% \item \textbf{Antisymmetric} if \(x \preceq y\) and \(y \preceq x\) then \(x = y\)
+% \item \textbf{Transitive} if \(x \preceq y\) and \(y \preceq z\) then \(x \preceq z\)
 % \end{itemize} 
 
 
