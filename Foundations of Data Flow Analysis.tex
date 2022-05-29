@@ -200,9 +200,25 @@ Alternatively, \((F,V,\wedge)\) is monotone if and only if \(  f(x \wedge y) \pr
 function individually and then merge the result. Values are defined by semi-lattice, the meet operator only ever moves down the lattice from top towards the bottom. 
 So we need to constrain the transfer function.
 
+I will show you a unmonotone example.
+
+Let top be 1 and bottom be 0 and the meet operator is \(\cap\). \(f(0) = 1, f(1) = 0\)
 
 
-\subsection{}
+Let's check whether reaching definitions is monotone.
+
+
+Note that monotone framework does not mean \(f(x) \preceq  x\).
+
+
+
+\subsection{Distributivity}
+
+Reaching definitions is distributive but constant propogation is not.
+
+
+
+\subsection{spped of }
 
 % \[
 % f_1(x) = G_1 \cup (x - K_1)   
