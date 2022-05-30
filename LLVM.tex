@@ -116,4 +116,94 @@ Support for outlining multiple regions of each function is added, as well as som
 
 Fallback to the regular partial inlining scheme is retained when either i) no regions are identified for outlining in the function, or ii) the outlined function could not be inlined in any of its callers.
 
+\subsubsection{Control height reduction}
 
+Control height reduction merges conditional blocks of code and reduces the
+number of conditional branches in the hot path based on profiles.
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  if (hot_cond1) { // Likely true.
+
+  do_stg_hot1();
+  }
+  if (hot_cond2) { // Likely true.
+  
+  do_stg_hot2();
+  }
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  if (hot_cond1 && hot_cond2) { // Hot path.
+
+  do_stg_hot1();
+  do_stg_hot2();
+  } else { // Cold path.
+  
+  if (hot_cond1) {
+    do_stg_hot1();
+  }
+  if (hot_cond2) {
+    do_stg_hot2();
+  }
+  }
+\end{lstlisting}
+
+This speeds up some internal benchmarks up to ~30\%.
+
+\subsection{Loop Unrolling \& Loop Vectorization}
+
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  for (int i=0; i<16; ++i)
+  C[i] = A[i] + B[i];
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  for (int i=0; i<16; i+=4) {
+    C[i] = A[i] + B[i];
+    C[i+1] = A[i+1] + B[i+1];
+    C[i+2] = A[i+2] + B[i+2];
+    C[i+3] = A[i+3] + B[i+3];
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  for (int i=0; i<16; i+=4)
+  addFourThingsAtOnceAndStoreResult(
+  &C[i], &A[i], &B[i]);
+\end{lstlisting}
+\subsection{Partial Inline}
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  for (int i=0; i<16; i+=4)
+  addFourThingsAtOnceAndStoreResult(
+  &C[i], &A[i], &B[i]);
+\end{lstlisting}
+
+\subsection{Partial Inline }
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  void foo() {
+    bar();
+    // rest of the code in foo
+    }
+    void bar() {
+    if (X)
+    return;
+    // rest of code (to be outlined)
+    }
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+  void foo() {
+    if (!X)
+    bar.outlined();
+    // rest of the code in foo
+    }
+    void bar.outlined() {
+    // rest of the code in bar
+    }
+\end{lstlisting}
