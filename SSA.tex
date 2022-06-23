@@ -10,19 +10,53 @@ know where the definitions are.
 
 
 
-Take the code for example, 
+Take the code\ref{fig:ssaexm1} for example, if \texttt{B,C,D} are defined outside the loop, we can move the computation ouside the loop.
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{ssaexm1.drawio.pdf}
+%     \caption{Example of Loop-Invariant Code Motion}
+%     \label{fig:ssaexm1}
+% \end{figure}
+
+
+Copy optimization is also an important optimization and one way that you can do some analysis for copy propogation is that you can 
+look for any use of a variable if it turns out that all of the reaching definitions of it are of the form where they are coping the same 
+variable. Take the code \ref{fig:ssaexm2} for example. If all reaching definitions of \texttt{X} copies the same variable \texttt{Y}, and \texttt{Y} is not 
+redefined since that copy, then we can substitute use of \texttt{X} with use of \texttt{Y}.
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{ssaexm2.drawio.pdf}
+%     \caption{Example of Copy Propogation}
+%     \label{fig:ssaexm2}
+% \end{figure}
+% \subsection{The Development of Static Single Assignment Form}
+
+
+
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.4\textwidth]{ssaexm1.drawio.pdf}
-    \caption{Example of Loop-Invariant Code Motion}
-    \label{fig:ssaexm1}
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \includegraphics[width=0.6\textwidth]{ssaexm1.drawio.pdf}
+        \caption{Example of Loop-Invariant Code Motion}
+        \label{fig:ssaexm1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.4\textwidth}
+        \centering
+        \includegraphics[width=0.6\textwidth]{ssaexm2.drawio.pdf}
+        \caption{Example of Copy Propogation}
+        \label{fig:ssaexm2}
+    \end{subfigure}
+      
+    \caption{two examples}
 \end{figure}
 
 
 
-
-\subsection{The Development of Static Single Assignment Form}
 
 This concept is based on \footnote{\url{https://compilers.cs.uni-saarland.de/ssasem/talks/Kenneth.Zadeck.pdf}}
 
