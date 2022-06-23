@@ -23,7 +23,19 @@ Take the code\ref{fig:ssaexm1} for example, if \texttt{B,C,D} are defined outsid
 Copy optimization is also an important optimization and one way that you can do some analysis for copy propogation is that you can 
 look for any use of a variable if it turns out that all of the reaching definitions of it are of the form where they are coping the same 
 variable. Take the code \ref{fig:ssaexm2} for example. If all reaching definitions of \texttt{X} copies the same variable \texttt{Y}, and \texttt{Y} is not 
-redefined since that copy, then we can substitute use of \texttt{X} with use of \texttt{Y}.
+redefined since that copy, then we can substitute use of \texttt{X} with use of \texttt{Y} and then hopefully the assigment \texttt{X = Y} will end up becoming dead code later.
+
+It's often nice to know the relationship between when variables are used and when they are defined. So the motivation for SSA is that it would be nice to directly traverse between definitions and uses 
+between definitions and uses for paticular variables instead of having to look everything that is going on inside a flow graph. Argubly this will not only be convinient but also it might make things more efficient becuase I 
+can jump over all the instructions irrelevant to the analysis that I am doing. Another insight is that sometimes variables get reused but if we're overwriting a variable in the second time, the later 
+uses may have nothing to do with earlier uses and definitions of the variable. So specifically, \texttt{X} appears twice in the CFG, but the definition and use of \texttt{X} actually have nothing to do with that in the second block.
+So considering them to be the same variable is going to inhibit optimizations potentially. It would be nice if the compiler could realize they are seperate variables effectively.
+
+
+One way that you could potentially deal with wanting to go directly between uses and definitions is to create a type of index or a data structure called Definition-Use or Use-Definition chains. But it has a downside which means the chains can be expensive.
+
+In the case , if we even just consider one definition and all its uses, or one use and all of its definitions, these data structures can be non-trivially large. In general, if you have N definitions and M uses, the complexity of time and memory is \texttt{O(MN)}. 
+
 
 % \begin{figure}[h]
 %     \centering
