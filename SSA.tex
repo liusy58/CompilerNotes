@@ -1,5 +1,27 @@
 \section{Static Single Assignment}
 
+In this lecture we will cover what is SSA and how to convert a program to SSA form.
+
+\subsection{}
+
+When we are trying to do some types of optimizations, it is often nice to know when is a variable is defined.
+For loop invariant code motion where we are trying to move computations outside of a loop, you will see it is very important to 
+know where the definitions are.
+
+
+
+Take the code for example, 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{ssaexm1.drawio.pdf}
+    \caption{Example of Loop-Invariant Code Motion}
+    \label{fig:ssaexm1}
+\end{figure}
+
+
+
+
 \subsection{The Development of Static Single Assignment Form}
 
 This concept is based on \footnote{\url{https://compilers.cs.uni-saarland.de/ssasem/talks/Kenneth.Zadeck.pdf}}
