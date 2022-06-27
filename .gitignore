@@ -293,6 +293,5 @@ TSWLatexianTemp*
 #*Notes.bib
 slides/**
 *.pdf
-main.pdf
 **.txt
 !images/**
