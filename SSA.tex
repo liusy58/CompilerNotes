@@ -2,7 +2,7 @@
 
 In this lecture we will cover what is SSA and how to convert a program to SSA form.
 
-\subsection{}
+\subsection{Backgroud}
 
 When we are trying to do some types of optimizations, it is often nice to know when is a variable is defined.
 For loop invariant code motion where we are trying to move computations outside of a loop, you will see it is very important to 
@@ -10,7 +10,7 @@ know where the definitions are.
 
 
 
-Take the code\ref{fig:ssaexm1} for example, if \texttt{B,C,D} are defined outside the loop, we can move the computation ouside the loop.
+Take the code \ref{fig:ssaexm1} for example, if \texttt{B,C,D} are defined outside the loop, we can move the computation ouside the loop.
 
 % \begin{figure}[h]
 %     \centering
@@ -34,7 +34,6 @@ So considering them to be the same variable is going to inhibit optimizations po
 
 One way that you could potentially deal with wanting to go directly between uses and definitions is to create a type of index or a data structure called Definition-Use or Use-Definition chains. But it has a downside which means the chains can be expensive.
 
-In the case , if we even just consider one definition and all its uses, or one use and all of its definitions, these data structures can be non-trivially large. In general, if you have N definitions and M uses, the complexity of time and memory is \texttt{O(MN)}. 
 
 
 % \begin{figure}[h]
@@ -68,66 +67,80 @@ In the case , if we even just consider one definition and all its uses, or one u
 \end{figure}
 
 
-
-
-This concept is based on \footnote{\url{https://compilers.cs.uni-saarland.de/ssasem/talks/Kenneth.Zadeck.pdf}}
-
-
-In the very Beginning, there was dataflow analysis.   Ultimately dataflow analysis turns out to be very expensive.
-
-Viewing the program variable by variable exposes structure that is obscured by the dataflow model: 
-A kill allows the cfg to be clipped. Also, the dataflow for a single variable can be solved
-without iteration. This turns out to be a dead end, but it set the
-stage for the development of SSA.
-
-
-Take constant propogation for example, Kildall and Wegbreit use a conventional
-dataflow framework. The fact vector is very large: values not bits. Must use iteration.
-The time to run these is between \(O(ElogEV)\) and
-\(O(E^2 V)\) depending on the type of control flow
-graph processing.
+In the case , if we even just consider one definition and all its uses, or one use and all of its definitions, these data structures can be non-trivially large. In general, if you have N definitions and M uses, the complexity of time and memory is \texttt{O(MN)}. 
+So for that reason, def-use and use-def chains are not very popular becuase of their cost. But one thing we could do is to limit the number of definitions of a variable
+ to just one place. For example, I have all these definitions of \texttt{x} and if I set one of them to be \texttt{x1},I have at least simplified half of the problem.
 
 
 
-\subsubsection{The First Attack}
+\subsection{SSA}
 
-
-Use def-use chains. Sometimes this helps and sometimes it does not. This requires NMV
-def-use chains.
-
-\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
-switch (...) {
-case 1: x=...; y=...; break;
-...
-case n: x=...; y=...; break;
-}
-switch (...) {
-case 1: ...=x; ...=y; break;
-...
-case m: ...=x; ...=y; break;
-}
-\end{lstlisting}
-
-
-\subsubsection{The Second Attack }
-
-
-Add a “join birthpoint”
-for x and y between
-the two switches. 
+Def-use and use-def chains are things you will find in literature because of their expensive cost. An alternative that goes at least part of the way toward the same goal is to put the intermediate form into something called SSA style. 
+So under SSA, every variable is assigned statically at most once in the program text. It's not dynamic because we still have the problem of trying to figure out waht's happening dynamically as we go through all these different paths but we can at least simplify things a bit in terms of locations in the code 
+so statically each variable is just assigned once. It's easy to do this in a basic block.
 
 
 
-\begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
-    switch (...) {
-    case 1: x=...; y=...; break;
-    ...
-    case n: x=...; y=...; break;
-    }
-    birthpoint x, y;
-    switch (...) {
-    case 1: ...=x; ...=y; break;
-    ...
-    case m: ...=x; ...=y; break;
-    }
-    \end{lstlisting}
+
+
+% This concept is based on \footnote{\url{https://compilers.cs.uni-saarland.de/ssasem/talks/Kenneth.Zadeck.pdf}}
+
+
+% In the very Beginning, there was dataflow analysis.   Ultimately dataflow analysis turns out to be very expensive.
+
+% Viewing the program variable by variable exposes structure that is obscured by the dataflow model: 
+% A kill allows the cfg to be clipped. Also, the dataflow for a single variable can be solved
+% without iteration. This turns out to be a dead end, but it set the
+% stage for the development of SSA.
+
+
+% Take constant propogation for example, Kildall and Wegbreit use a conventional
+% dataflow framework. The fact vector is very large: values not bits. Must use iteration.
+% The time to run these is between \(O(ElogEV)\) and
+% \(O(E^2 V)\) depending on the type of control flow
+% graph processing.
+
+
+
+% \subsubsection{The First Attack}
+
+
+% Use def-use chains. Sometimes this helps and sometimes it does not. This requires NMV
+% def-use chains.
+
+% \begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+% switch (...) {
+% case 1: x=...; y=...; break;
+% ...
+% case n: x=...; y=...; break;
+% }
+% switch (...) {
+% case 1: ...=x; ...=y; break;
+% ...
+% case m: ...=x; ...=y; break;
+% }
+% \end{lstlisting}
+
+
+% \subsubsection{The Second Attack }
+
+
+% Add a “join birthpoint”
+% for x and y between
+% the two switches. 
+
+
+
+% \begin{lstlisting}[language=C,frame=single, caption=An ,label = lst:expr2]
+%     switch (...) {
+%     case 1: x=...; y=...; break;
+%     ...
+%     case n: x=...; y=...; break;
+%     }
+%     birthpoint x, y;
+%     switch (...) {
+%     case 1: ...=x; ...=y; break;
+%     ...
+%     case m: ...=x; ...=y; break;
+%     }
+%     \end{lstlisting}
