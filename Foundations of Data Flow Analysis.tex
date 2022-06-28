@@ -14,7 +14,7 @@ flow analysis.
 \item Correctness: Do we get a correct answer? 
 \item Precison: How good is the answer? \footnote{We want a safe solution but as precise as possible. }
 \item Covergence: Will the analysis terminate? 
-\item Spped: How fast is the convergence?
+\item Speed: How fast is the convergence?
 \end{itemize}
 
 
@@ -38,7 +38,7 @@ Why we bother to define such a framework?
 \item First, if meet operator, transfer function and the domains of values are specified in proper way, we will know about 
 correctness, precision and so on. 
 
-\item From prectical engineering perspective, it allows us to reuse code.
+\item From practical engineering perspective, it allows us to reuse code.
 \end{itemize}   
 
 
@@ -48,7 +48,7 @@ A relation \(R\) on a set \(S\) is called a \textbf{partial order} if it is
 
 \begin{itemize}
     \item \textbf{Transitivity} if \(x \preceq y\) and  \(y \preceq z\) then  \(x \preceq z\)
-    \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = z\)
+    \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = x\)
     \item \textbf{Reflexivity}  \(x = x\)
 \end{itemize}    
 
@@ -218,7 +218,7 @@ Reaching definitions is distributive but constant propogation is not.
 
 
 
-\subsection{spped of }
+\subsection{speed of }
 
 % \[
 % f_1(x) = G_1 \cup (x - K_1)   
