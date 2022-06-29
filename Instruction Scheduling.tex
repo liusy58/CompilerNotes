@@ -38,3 +38,37 @@ stages for example. So you fetch an instruction, you go grab it from memory, you
 decode it and figure out what it is and you read grab any registers that it's going to read
 from, then you execute it, then if it's a memory access you may need to load or store
 from memory and finally you may have a result that you need to put into a register file.
+These may be five different steps that instructions tyically go through, and the key thing is 
+that they use independent pieces of hardware as they flow through these different stages of execution
+
+And since they're using different pieces of hardware, what we do is rather than executing them 
+one after another, instead we can overlap them in time so that at any moment in time, we have 
+several different instructions in flight, where we're using different pieces of hardware for each 
+of the different instructions. So notice at one moment in time, we're using all the hardware
+associated with all five different stages, because those are independent pieces od hardware, but
+they happen to be running different instructions. So this is one way to create Parallelism.
+
+Should we simply make pipelines deeper and deeper? This becomes less and less attractive, 
+because these is overhead between pipeline stages. So you have registers that capture the 
+stage and between pipe stages. So this becomes less attractive. So you don't see hundred stage
+pipelines. And in fact if you make the pipeline stage short than the time it takes to do just
+a basic arithmetic operation. It's not particularly clear what the point is in trying to pipeline.
+at such a tiny granularity. The length of a pipeline stage can affect the clock rate.And there 
+was a lot of focus on increasing clock rates. Pentium 4 processor had a 20-stage pipeline.
+
+Pipeline is a form Parallelism and another way to make processors run faster is not just to break them up into independent stages whitn the execution of one instruction but to actually allow multiple instructions tp proceed side by side through pipeline stages.
+And in order todo this, you need to create more hardware in particular you need more alus. 
+So if we just focus on the execution stage where we do an arithmetic operation.
+In reality, this involves using a piece of hardware called called an alu. The idea is 
+what if we created multiple alus, so here I'm showing two of them or it clould be more 
+than that. So the idea is instead of just executing one instruction through the alu,
+I can potentially be executing two instructions side by side. 
+The requirement though is they have to be independent instruction. They can't depend
+on each other.
+
+For original pipeline, only one instruction in a given pipe stage at a given time.
+But for superscalar pipeline, there can be multiple instructions in the same pipe
+stage at the same time. The idea is we create even more Parallelism by allowing more 
+instructions to proceed simultaneously. Although mpw there has to be even more independence
+between these instructions, the ones are going side by side at least. 
+
