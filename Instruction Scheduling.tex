@@ -19,4 +19,22 @@ already eliminated as much work as possible, but instead our goal is to take tha
 fixed amount of work that we have and to perform it faster. And how is that possible
 the basic answer for how this happens is that we want to execute things in parallel.
 If we want to scrunch the same amount of work into less time that means essentially
-overlapping things. So for 
+overlapping things. Let's say there's a sequence of instructions that we're assigning 
+values to a b and c. With instruction scheduling, we're hoping to we still have to do all
+all of this work, but we can do all the work simultaneously, then that would allow 
+us to get our answer faster. 
+
+Parallelism occurs in different forms in modern machines, and I'am going to talk a little
+bit about each of these things. The first two items are pipelineing and superscalar 
+processing. Exploiting those types of Parallelism for historical reasons we call that 
+instruction scheduling. To take full advantage of parallel processing on multiple cores
+with multiple threads we call that automaic Parallelization, which we will talk about
+later. 
+
+At a high level, if you think about the time that it takes to exceute an instruction,
+the idea behind pipelineing is to break up that time into different stages.
+Examples of some modern processors talked about breaking up execution into five 
+stages for example. So you fetch an instruction, you go grab it from memory, you 
+decode it and figure out what it is and you read grab any registers that it's going to read
+from, then you execute it, then if it's a memory access you may need to load or store
+from memory and finally you may have a result that you need to put into a register file.
