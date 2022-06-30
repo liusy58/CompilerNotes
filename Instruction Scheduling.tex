@@ -69,6 +69,28 @@ on each other.
 For original pipeline, only one instruction in a given pipe stage at a given time.
 But for superscalar pipeline, there can be multiple instructions in the same pipe
 stage at the same time. The idea is we create even more Parallelism by allowing more 
-instructions to proceed simultaneously. Although mpw there has to be even more independence
+instructions to proceed simultaneously. Although there has to be even more independence
 between these instructions, the ones are going side by side at least. 
+ 
+Beceuse pipelining and superscalar processing, we need to parallel instructions that don't have 
+tight data dependencies, so we can execute them simultaneously. So if you think about this 
+being the instruction stream, the dynamic path through the code. The ideal thing for instruction scheduling
+is through some magic, we take all these instructions and figure out a way to cram them together
+into as little time as possible. In the absoulte extreme instead of doing n instructions with n cycles
+. What if we could cram all of them into one cycle. So is this possible?
+
+There are three major things that can strain our ability to achieve that ideal. They are 
+hardware resources, data dependencies and control dependencies. 
+
+First, hardware resources. Modern processors have finite resources, and there are often constraints
+on how resources can be used. There are three kinds constraints that affect scheduling. First of all,
+a processor can only issue a certain number of instructions every clock cycle and so that might 
+be fo example four instructions or something like that. The next type of constraints is there's
+a certain mixture of functional units, so there might be a certain of alus that can perform. So 
+among you have four instructions, it's not that you can have an arbitrary mix of instructions.
+There can be also constraints based on the type of instruction that you're trying to execute. Finally,
+another type of limitation is that there are some functional units where you can't necessarily start a instruction
+once you start a new one down the same piece of hardware immediately on the next clock cycle.
+Some like integer divide. So there are some operations keep a piece of hardware busy for a while.
+There might be a restriction on how soon you can start the next instruction.
 
