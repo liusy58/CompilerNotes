@@ -11,10 +11,10 @@ make clean && make BIBFILES=main.bib
 - [X] Local Optimizations
 - [ ] LLVM
 - [X] Introduction to Dataflow analysis
-- [ ] Foundations of Dataflow analysis
-- [ ] GCSE/ConstProp
-- [ ] SSA
-- [ ] SSA Optimizations 
+- [X] Foundations of Dataflow analysis
+- [X] GCSE/ConstProp
+- [X] SSA
+- [X] SSA Optimizations 
 - [ ] LICM
 - [ ] Strength Reduction
 - [ ] PRE
