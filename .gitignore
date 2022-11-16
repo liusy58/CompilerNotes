@@ -295,3 +295,4 @@ slides/**
 *.pdf
 **.txt
 !images/**
+!main.pdf
