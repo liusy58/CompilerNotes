@@ -6,9 +6,9 @@ make clean && make BIBFILES=main.bib
 ```
 
 
-Buy me a cup of coffee ☕️ if you find this is helpful! 
+Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/45984215/202376581-4837a283-4812-4063-82bc-cc9c3101d3a5.jpg) if you find this is helpful! 
 
-![631668667775_ pic](https://user-images.githubusercontent.com/45984215/202376581-4837a283-4812-4063-82bc-cc9c3101d3a5.jpg)
+
 
 
 # TODO
