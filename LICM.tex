@@ -1,0 +1,203 @@
+\newpage
+
+\section{Loop Invariant Computation and Code Motion}
+
+
+Loop-Invarian Code Motion (LICM) recognizes computations within a loop that produce the same result each time the loop is executed. 
+These computations are called loop-invariant code and can be moved outside the loop body without changing the program semantics. 
+The positive effects of LICM are:
+\begin{itemize}
+\item The shifted loop invariants exhibit a reduced execution frequency.
+\item The transformation may shorten variable live ranges leading to a decreased register pressure. This circumstance may in turn reduce the number of required spill code instructions.
+\item Moving code outside a loop reduces the loop's size which may be beneficial for the I-cache behavior since more loop code can reside in the cache.
+\end{itemize}
+
+Besides these positive effects on the code, LICM may also degrade performance. This is mainly due to two reasons. First, the newly created variables to store the loop-invariant results outside the loop, may increase the register pressure in the loops since their live ranges span across the entire loop nest. As a result, possibly additional spill code is generated. 
+Second, LICM might lengthen other paths of the control flow graph. This situation can be observed if the invariants are moved from a less executed to a more frequently executed path, e.g., moving instructions above a loop's zero-trip test.
+
+
+\subsection{Finding natrual loops}
+
+Not every cicle is a loop in CFG. From a intuitive perspective, a loop must has a single entry and edges must from at least one circle.   
+
+\begin{definition}{Back Edge}
+    A back edge is an arc t$\rightarrow$h whose
+head h dominates its tail t
+\end{definition}
+
+\begin{definition}{Natural Loop}
+    The natural loop of a back edge t$\rightarrow$h
+    is the smallest set of nodes that
+    includes t and h, and has
+    no predecessors outside the set,
+    except for the predecessors of the header h.
+\end{definition}
+
+\begin{definition}{Reducible}
+A flow graph is reducible if every retreating edge in any DFST (Deep-First Spanning Tree) for that flow graph is a back edge.
+\end{definition}
+
+
+
+\paragraph{Testing reducibility} Take any DFST for the flow graph, remove the back edges, and check that the result is acyclic.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{DFST.png}
+    \caption{Example: Nonreducible Graph }
+    \label{fig:DFST}
+\end{figure}
+
+\subsection{Algorithm to Find Natural Loops}
+
+\subsubsection{Step 1. Finding Dominators}
+
+We can formulate this as Data Flow Analysis problem. Since Node d dominates node n in a graph (d dom n)
+if every path from the start node to n goes through d. So if d dom n iff iff d dom p for all pred p of n.
+\begin{center}
+ \begin{tabular}{|c|c|}
+\hline Direction & Forward\\
+\hline Values & Basic Blocks\\
+\hline Meet operator & \( \cap \)\\
+\hline Top(T) & Universal Set\\
+\hline Bottom & $\phi$\\
+\hline Boundary condition for entry node & $\phi$ \\  
+\hline Initialization for internal nodes & \(\mathrm{T}\) \\
+\hline Finited escending chain? &\checkmark  \\
+\hline Transferfunction  & $\text { OUT }[\mathbf{b}]=\{\mathbf{b}\} \cup\left(\cap_{\{\boldsymbol{p}=\boldsymbol{p r e d}(\boldsymbol{b})\}} \text { OUT }[\mathbf{p}]\right)$ \\
+\hline Monotone\&Distributive?  & \checkmark \\
+\hline
+\end{tabular}  
+\end{center}
+
+
+With rPostorder, most flow graphs (reducible flow graphs) converge in 1 pass. 
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.3\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p61.png}
+        \caption{CFG.}
+        \label{fig:p61}
+    \end{subfigure}
+    \begin{subfigure}{0.3\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p62.png}
+        \caption{Dominance Tree of the corresponding CFG.}
+        \label{fig:p62}
+    \end{subfigure}
+    
+    \caption{An example of Dominance tree.}
+       \label{fig:p51-58}
+\end{figure}
+
+
+
+\subsubsection{Step 2. Finding Back Edges}
+
+\paragraph{Depth-first spanning tree}
+Edges traversed in a depth-first search of the flow graph form a depth-first spanning tree. We categorize edges in CFG as follows:
+\begin{itemize}
+    \item Forward edges (node to proper descendant).
+    \item Retreating edges (node to ancestor).
+    \item Cross edges (between two nodes, neither of which is an ancestor of the other.)
+\end{itemize}
+
+This is something difficult to understand. Let's make it simpler. We can number each node when we visit it. So each edge should be satisfied the following property:
+
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline Forward/Advancing edges  \( n_1 \rightarrow n_2\) & num($n_1$) $<$ num($n_2$) and  $n_1$ is ancestor of  $n_2$\\
+\hline Cross edges  \( n_1 \rightarrow n_2\)& num($n_1$) $>$ num($n_2$) and neither  $n_1$ is ancestor of  $n_2$ nor $n_2$ is ancestor of  $n_1$ \\
+\hline Retreating edges  \( n_1 \rightarrow n_2\) & num($n_1$) $>$ num($n_2$) and  $n_2$ is ancestor of  $n_1$\\
+\hline
+\end{tabular}  
+\end{center}
+
+
+
+
+
+Of these edges, only retreating edges go from high to low in DF order.
+
+
+
+\paragraph{Algorithm}
+
+\begin{itemize}
+    \item Perform a depth first search
+    \item For each retreating edge \(t \rightarrow h\), check if h is in t$^\prime$s dominator list
+\end{itemize}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.3\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p61.png}
+        \caption{CFG.}
+        \label{fig:p61}
+    \end{subfigure}
+    \begin{subfigure}{0.3\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p62.png}
+        \caption{Dominance Tree of the corresponding CFG.}
+        \label{fig:p62}
+    \end{subfigure}
+    \begin{subfigure}{0.3\textwidth}
+        \centering
+            \includegraphics[width=\textwidth]{p63.jpg}
+            \caption{{\color{red} R} means back edges and {\color{orange} C} means cross edge.}
+            \label{fig:p62}
+        \end{subfigure}
+    \caption{An example of Back Eges.}
+       \label{fig:p51-58}
+\end{figure}
+
+\subsubsection{Step 3. Constructing Natural Loops}
+
+\paragraph{Algorithm} For each back edge $t\rightarrow h$:
+
+\begin{itemize}
+    \item delete h from the flow graph
+    \item find those nodes that can reach t
+(those nodes plus h form the natural loop of \(t \rightarrow h\))
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.3\textwidth]{p64.png}
+         \caption{For this flow graph, for back edge 8 $\rightarrow$ 7, natrual loop is \{ 7,8 \}, for back edge 5 $\rightarrow$ 2, natrual loop is \{ 2,3,4,5,6,7,8 \},back edge 4 $\rightarrow$ 1, natrual loop is \{ 1,2,3,4,5,6,7,8\}.}
+         \label{fig:p64}
+\end{figure}
+
+\subsection{Inner Loops}
+
+If two different loops don't have ths same header, they are either disjoint or one is entirely contained the other (inner loop is the one that contains no other loop.).
+If two loops share the same header shown in ref{fig:p65}, it is hard to tell which is the inner loop. But we can combine and treat as one loop.
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.3\textwidth]{p65.png}
+         \caption{Two loops share the same header.}
+         \label{fig:p65}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
