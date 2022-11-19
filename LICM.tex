@@ -192,12 +192,133 @@ If two loops share the same header shown in ref{fig:p65}, it is hard to tell whi
 
 
 
+\subsection{Loop-Invariant Computation and Code Motion}
+
+\begin{definition}{Loop-Invariant Computation}
+    A loop-invariant computation is a computation whose value doesn't change as long as control stays within the loop. 
+    loop invariant whose operands are defined outside loop or invariant themselves.
+\end{definition}
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.7\textwidth]{p66.png}
+         \caption{For this CFG, \texttt{A = B+C, F=A+2, E=3} are Loop-Invariant Computation, but \texttt{D = A + 1} is not. }
+         \label{fig:p66}
+\end{figure}
+
+
+
+Not all loop invariant instructions can be moved to preheader.
+
+
+\subsection{LICM Algorithm}
+
+\begin{itemize}
+\item Find invariant expressions
+\item Conditions for code motion
+\item Code transformation
+\end{itemize}
+
+
+
+\subsection{Find invariant expressions}
+
+
+\begin{itemize}
+    \item Compute reaching definitions
+    \item Repeat: mark \texttt{A = B + C} as invariant if
+    \begin{itemize}
+        \item All reaching definitions of B are outside the loop or
+        there is exactly one reaching definition for B and it is from a loop-invariant statement inside the loop.  
+        \item Check the same for C.
+        \end{itemize}
+    \item Code transformation
+    \end{itemize}
+
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.7\textwidth]{p67.png}
+             \caption{For this CFG, \texttt{A = B+C, E = 2, E = 3, D = A + 1} are Loop-Invariant Computation, but \texttt{F = E + 2} is not because two definitions of E reach \texttt{F = E + 2}. }
+             \label{fig:p67}
+    \end{figure}
+
+
+\subsection{Conditions for Code Motion}
 
 
 
 
+\begin{algorithm}[H]
+    \caption{Code Motion Algorithm}\label{alg:Code Motion Algorithm}
+    \begin{algorithmic}
+    \State{Given: a set of nodes in a loop}
+    \State{Compute reaching definitions}
+    \State{Compute loop invariant computation}
+    \State{Compute dominators}
+    \State{Find the exits of the loop (i.e. nodes with successor outside loop)}
+    \State{Candidate statement for code motion:}
+    \State{\,\,\,\,\,\,\,\, loop invariant}
+    \State{\,\,\,\,\,\,\,\, in blocks that dominate all the exits of the loop shown in \ref{fig:p68}}
+    \State{\,\,\,\,\,\,\,\, assign to variable not assigned to elsewhere in the loop}
+    \State{\,\,\,\,\,\,\,\, in blocks that dominate all blocks in the loop that use the variable assigned shown in \ref{fig:p69}}
+    \State{Perform a depth-first search of the blocks}
+    \State{\,\,\,\,\,\,\,\, Move candidate to preheader if all the invariant operations it depends upon
+    have been moved}
+    \end{algorithmic}
+    \end{algorithm}
 
 
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.4\textwidth]{p68.png}
+         \caption{It is not safe to move \texttt{A = B + C} outside the loop because we can jump of the loop before executing \texttt{A = B + C}}
+         \label{fig:p68}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.4\textwidth]{p69.png}
+         \caption{It is not safe to move \texttt{A = B + C} outside the loop because if so, the first time we enter the loop \texttt{E = A} will not the same as before.}
+         \label{fig:p69}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.4\textwidth]{p70.png}
+         \caption{Only \texttt{E = 3} can be moved outside the loop.}
+         \label{fig:p70}
+\end{figure}
 
 
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.4\textwidth]{p71.png}
+         \caption{Only \texttt{A = B + C , D = A + 1} can be moved outside the loop.}
+         \label{fig:p71}
+\end{figure}
 
+\subsection{More Aggressive Optimizations}
+
+\subsubsection{Gamble on: most loops get executed}
+
+We can relax constraint of dominating all exits on some cases.
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.4\textwidth]{p72.png}
+         \caption{\texttt{A = B + C} cannot be removed outside the loop because it doesn't dominat the exit. But if A is not live after the loop, we can actually move it to the preheader. The only thing we need to consider is that this statement can cause an exception.}
+         \label{fig:p72}
+\end{figure}
+
+
+\subsubsection{Landing pads}
+\texttt{while} loop is not very convenient for optimization since it checks before entering the loop. 
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.6\textwidth]{p73.png}
+         \caption{Transforms for while loops.}
+         \label{fig:p73}
+\end{figure}
