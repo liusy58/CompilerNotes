@@ -14,13 +14,13 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 # TODO
 
 - [X] Local Optimizations
-- [ ] LLVM
+- [X] LLVM
 - [X] Introduction to Dataflow analysis
 - [X] Foundations of Dataflow analysis
 - [X] GCSE/ConstProp
 - [X] SSA
 - [X] SSA Optimizations 
-- [ ] LICM
+- [X] LICM
 - [ ] Strength Reduction
 - [ ] PRE
 - [ ] Lazy Code Motion
