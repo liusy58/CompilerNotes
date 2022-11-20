@@ -87,3 +87,69 @@ the value of A is a linear function of B. (e.g., t1, t2 is in family of i as sho
 
 
 \subsubsection{Optimizing basic induction variables}
+
+Eliminate basic induction variables used only for calculating other induction variables and loop tests.   
+\begin{algorithm}[H]
+    \caption{Optimizing basic induction variables}\label{alg:Optimizing basic induction variables}
+    \begin{algorithmic}
+
+
+    \State{Select an induction variable A in the family of B, preferably with simple constants ($A = c_1 * B + c_2$ ).}
+    \State{Replace a comparison such as \texttt{if B > X goto L1} with \texttt{if (A$\prime$ > $c_1 * X + c_2$) goto L1} (assuming c 1 is positive)}
+    \State{if B is live at any exit from the loop, recompute it from A$\prime$, After the exit, $B = (A^\prime - c 2 ) / c 1$}
+    \end{algorithmic}
+    \end{algorithm}
+
+\subsection{Further Details}
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.7\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p78.pdf}
+        \caption{A more complex example. k and i are both basic induction variables.
+         m is in the family of k.}
+        \label{fig:p78}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+    \centering
+        \includegraphics[width=0.7\textwidth]{p79.pdf}
+        \caption{After induction variable substitute.}
+        \label{fig:p79}
+    \end{subfigure}
+    
+    \caption{A more complex example of strength reduction.}
+       \label{fig:p74-76}
+\end{figure}
+
+\subsection{Finding Induction Variable Families}
+
+Let B be a basic induction variable, A is in the family of B if it satisfies one the following conditions
+\begin{itemize}
+\item {\large{\textbf{Condition C1}}} A has a single assignment in the loop L of the form A = B*c, c*B, B+c, etc
+\item {\large{\textbf{Condition C2}}} A is in family of B if $D = c_1 * B + c_2$ for basic induction variable B and:
+\begin{itemize}
+    \item Rule 1: A has a single assignment in the loop L of the form A = D*c, D+c, etc
+    \item Rule 2: No definition of D outside L reaches the assignment to A
+    \item Rule 3: Every path between the lone point of assignment to D in L and the
+    assignment to A has the same sequence (possibly empty) of definitions of B
+    \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.3\textwidth]{p80.png}
+         \caption{i is abasic induction variable, t1 t2 are in family ofi, but t2 is not because it violates the condition C2 rule 2.}
+         \label{fig:p80}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.3\textwidth]{p81.png}
+         \caption{i is abasic induction variable, t1 is in the family of i. t2 is not because it violates the Condition2 rule3(some path reaches t2 includes \texttt{i = i+1} but some not.). }
+         \label{fig:p80}
+\end{figure}
