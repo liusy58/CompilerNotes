@@ -21,7 +21,7 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] SSA
 - [X] SSA Optimizations 
 - [X] LICM
-- [ ] Strength Reduction
+- [X] Strength Reduction
 - [ ] PRE
 - [ ] Lazy Code Motion
 - [ ] Region Analysis
