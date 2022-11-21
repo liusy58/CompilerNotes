@@ -173,13 +173,65 @@ expression to be:
 
 \begin{itemize}
     \item  Anticipated at the start of block i (somebody wants the expression) \\
-    {\huge and} 
+    {\large \textbf{and}} 
     
-        \item {\huge (2a)} The expression must be partially
+        \item {\large \textbf{(2a)}}  The expression must be partially
         available (to perhaps transform
         into full availability)\\
-        {\huge or} 
-        \item {\huge (2b)} The block neither kills nor
+        {\large \textbf{or}} 
+        \item {\large \textbf{(2b)}} The block neither kills nor
         computes the expression.
    
 \end{itemize}
+
+Next, we compute PPIn[i] and PPOut[i]
+.
+PP means “possible placement” of a computation at the start (PPIn[i]) or
+end (PPOut[i]) of a block. These values determine whether a
+computation of the expression would
+be “useful” at the start or end of a
+basic block.
+
+
+$$
+\text { PPOUT[i] }=\left\{\begin{array}{cl}
+0 & i=\text { entry } \\
+\bigcap_{s \in \text { succ(i) }} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
+\end{array}\right.
+$$
+
+We try to move computations "up" (nearer the start block). It makes sense to compute an
+expression at the end of a block if it
+makes sense to compute at the start
+of all the block’s successors.
+
+$$
+\operatorname{PPIN}[\mathrm{i}]=\left\{\begin{array}{cc}
+0 & i=\text { exit } \\
+\text { ([ANTLOC[i] } \cup(\mathrm{PPOUT}[i]-\mathrm{KILL}[i])] & \\
+\bigcap_{p \in \text { preds(i) }}(\mathrm{PPOUT}[\mathrm{p}] \cup \mathrm{AVOUT}[\mathrm{p}]) & \text { otherwise } \\
+\cap \text { CONST[i]) }
+\end{array}\right.
+$$
+
+
+To determine if PPIni
+ is true, we first
+check the enabling term. It makes sense
+to consider a computation of the
+expression at the start of block i if the
+expression is anticipated (wanted) and
+partially available or if the expression is
+anticipated (wanted) and it is neither
+computed nor killed in the block.
+We then check that the expression is
+anticipated locally or that it is
+unchanged within the block and possibly
+positioned at the end of the block.
+
+Finally, we check that all the block’s
+predecessors either have the expression
+available at their ends or are willing to
+position a computation at their end.
+Note also, the bi-directional nature of
+this equation.
