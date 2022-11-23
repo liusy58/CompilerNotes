@@ -151,6 +151,120 @@ of the expression do not modify its operands.
          \label{fig:p88}
 \end{figure}
 
+We define "\textbf{Placement Possible }"(PP) dataflow analysis. First of all, we are only going to place computations at the end of the blocks. 
+We want to insert the computation at the earliest place where our \textbf{Placement Possible }is true. If the \textbf{Placement Possible }is true output of a block(PPOUT), it means 
+it is fine to insert at the end of this block or earlier. If it is true athe the beginning of the block, it means we could insert it at the beginning of the block or earlier. Becuase we want to
+insert it at the end of the block, so if \textbf{Placement Possible }is true at the beginning of the block(PPIN), you won't insert it in the block, it means you need to take care of something before.
+So when PPIN is true, it really means is for every predecessor block, it is either possible to keep moving it back and make it fully redundant by placing in that block or earlier or it is not necessary because 
+it is already generatedin one of those blocks. 
+
+We insert if PPOUT is true and either PPIN is false so we cannot move it back any further or if we locally kill it then clearly we have to insert it here because trying to insert it earlier would not work. And we only want to insert it if it is not 
+already available.
+
+
+We want to delete an expression where PPIN is true (somehow we make it fully redundant) and it is anticipated locally.
+
+
+For safety reasons, if we want to place at output of a block, we want to place at entry of all successors. (PPOUT)
+
+$$
+\text { PPOUT[i] }=\left\{\begin{array}{cl}
+0 & i=\text { entry } \\
+\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
+\end{array}\right.
+$$
+
+
+When PPIN is true, if means 
+\begin{itemize}
+\item we have a local computation to place, or a placement at the end of this block which we can move up 
+\item  we want to move computation to output of all predecessors where expression is not already available (don’t insert at input) (for every predecessor,)
+\item we gain something by moving it up (PAVIN heuristic) (not too far)
+\end{itemize}
+
+$$
+\operatorname{PPIN}[\mathrm{i}]=\left\{\begin{array}{cc}
+0 & i=\text { exit } \\
+([\text { ANTLOC[i] } \cup \text { (PPOUT }[i]-\operatorname{KILL}[i])] & \\
+\cap \bigcap_{p \in \text { preds }(i)}(\text { PPOUT }[p] \cup \text { AVOUT }[p]) & \text { otherwise } \\
+\cap \text { PAVIN }[i]) &
+\end{array}\right.
+$$
+
+
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{p102.pdf}
+         \caption{Example for PRE for \texttt{a+b}}
+         \label{fig:p102}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{p103.pdf}
+         \caption{Example for PRE for \texttt{a+b}}
+         \label{fig:p103}
+\end{figure}
+\subsubsection{Safety}
+
+It is  safe to insert only if anticipated. 
+
+$$
+\text { PPIN[i] } \subseteq(\text { PPOUT[i] - KILL[i]) U {\color{red}ANTLOC}[i] }
+$$
+
+
+$$
+\text { PPOUT[i] }=\left\{\begin{array}{cl}
+0 & i=\text { entry } \\
+\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
+\end{array}\right.
+$$
+
+$$
+{\color{red}\text{INSERT}} \subseteq \text{PPOUT} \subseteq {\color{red}\text{ANTOUT}}
+$$
+
+So it is safe.
+
+\subsection{Perform}
+On every path from an INSERT, there is a DELETE.
+
+
+\subsection{Limiations}
+
+
+
+
+\subsection{A new way to think about partial redundancy}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 We want to insert the new computation where it is not partially available there.
 
 
