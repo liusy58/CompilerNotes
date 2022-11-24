@@ -1,0 +1,66 @@
+\newpage
+
+
+\section{Lazy Code Motion}
+
+In 1979, Morel and Renvoise came up with an exciting new technique,
+the suppression of partial redundancies \cite{morel1979global}. Their technique
+uniformly subsumed loop invariant code motion, common
+subexpression elimination, and the elimination of redundant
+computations. Probably, the most appealing facet of their
+technique was its structural purity: the transformation was
+solely based on data-flow analysis and did not require any
+specific knowledge on the control flow of the programs under investigation. On the other hand, their genuine proposal
+was conceptually complex. It involved an equation system
+of four highly interacting global properties while still suffering from three deficiencies. First, too few partial redundancies are removed. Intuitively, this was due to Morel’s and
+Renvoise’s design decision to insert code at the nodes of the
+underlying flow graph rather than at its edges, which unnecessarily restricted the possible computation points. Second,
+code was moved too far, which led to unnecessary register
+pressure. And third, the node placement was based on bidirectional data-flow equations which — from a conceptual
+point of view — are difficult to comprehend and — from a
+computational point of view — are more costly to compute.
+
+As we started our work on lazy code motion, we were convinced that research efforts based on modifying the Morel/-
+Renvoise-style equations had led into a dead end. Partial redundancy elimination (PRE) is a beautiful technique with
+a simple underlying basic idea: expressions are hoisted to
+earlier program points increasing thereby their potential to
+make the original ones fully redundant, which can then be
+eliminated. We had the strong belief that it must be possible to construct a PRE-technique which is solely composed
+out of simple and well-understood components.
+
+\textit{Decomposing the problem.} A key idea to attack the problem was its \textbf{decomposition} based on a clean separation of
+concerns. We noticed that there are two optimization goals
+with a natural hierachy: the primary is to reduce the number of computations to a minimum (computational optimality); 
+the secondary to avoid unnecessary code movement to
+\textbf{minimize the lifetimes of temporaries and hence the register
+pressure (lifetime optimality)}. There is no a topological order for the bidirectional dataflow analysis, so this does complicate things.
+
+\textit{Solving the problem.} Fortunately, we already had an offthe-shelf solution for the first optimization goal. Investigating the relationship between model checking and data-flow
+analysis has led to a modal logic specification of a computationally optimal PRE following an as-early-as-possible code
+placement strategy \cite{steffen1991data}. We called the resulting transformation “Busy Code Motion (BCM),” as it hoists code as
+far as possible. Technically it required only two simple unidirectional data-flow analyses. This simplicity revealed the
+solution to our secondary goal, the avoidance of unnecessary code motion: the code only had to “sink back” from
+the BCM insertion points as far as computational optimality was preserved, which can be realized simply by adding another 
+unidirectional data-flow analysis. The resulting transformation, which \textbf{solves the problem of unnecessary register
+pressure}, hoists code just far enough to ensure computationally optimal results, the reason for it being called “Lazy
+Code Motion (LCM).”
+
+This successful way of playing with simple analysis components was later extended to also control/minimize code
+size \cite{ruthing2000sparse}. Here, the natural trade-off between the optimization goals led to different solutions depending on the chosen
+priority between size and speed.
+
+
+\subsection{Big Picture}
+
+First calculates the “earliest” set of blocks for insertion, this maximizes redundancy elimination but may also result in long register lifetimes.
+Then it calculates the “latest” set of blocks for insertion, this achieves the same amount of redundancy elimination as “earliest” but hopefully reduces register lifetimes
+
+
+\subsection{}
+
+% \begin{definition}{Cut Set}
+% A cut set are nodes that separate entry from p. a cut set contains calculation of a+b
+
+% \end{definition}
+
+
