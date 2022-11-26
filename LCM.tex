@@ -56,7 +56,255 @@ First calculates the “earliest” set of blocks for insertion, this maximizes 
 Then it calculates the “latest” set of blocks for insertion, this achieves the same amount of redundancy elimination as “earliest” but hopefully reduces register lifetimes
 
 
-\subsection{}
+\subsection{PRE vs. LCM}
+
+
+The goal of PRE is that by {\color{red}moving around} the places where an expression is
+evaluated and keeping the result in a temporary variable when
+necessary, we often can {\color{red}reduce the number of evaluations} of this
+expression along many of the execution paths, {\color{red}while not
+increasing that number along any path.} However, it is {\color{red}not} possible to eliminate all redundant computations along
+every path, unless we are allowed to {\color{red}change the control flow
+graph} by {\color{red}creating new blocks} and {\color{red}duplicating blocks.}
+
+\begin{definition}{New blocks creation}
+    It can be used to break {\color{red}“critical edge”},
+    which is an edge leading from a node with more than one
+    successor to a node with more than one predecessor.
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.5\textwidth]{p104.png}
+             \caption{Example of new block creation}
+             \label{fig:p104}
+    \end{figure}
+
+\end{definition}
+
+\begin{definition}{Block duplication}
+    It can be used to isolate the path where
+    redundancy is found.
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.5\textwidth]{p105.png}
+             \caption{Example of block duplication}
+             \label{fig:p105}
+    \end{figure}
+
+\end{definition}
+
+
+\subsection{Preprocessing: Preparing the Flow Graph}
+
+First, we need modify the flow graph. Inorder to ensure redundancy elimination power, we add
+a basic block for every edge that leads to a basic block with multiple
+predecessors. Also, in LCM, we restrict placement of instructions to the beginning of a basic block
+Consider each statement as its own basic block to keep algorithm simple.
+
+
+\begin{definition}{Full Redundancy: A Cut Set in a Graph}
+    Full redundancy at p: expression a+b redundant on all paths
+    \begin{itemize}
+    \item a cut set: nodes that separate entry from p (could have multiple cut sets).
+    \item each node in a cut set contains a calculation of a+b.
+    \item a, b not redefined.
+    \end{itemize}
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.5\textwidth]{p106.png}
+             \caption{Full Redundancy}
+             \label{fig:p106}
+    \end{figure}
+\end{definition}
+
+
+\begin{definition}{Partial Redundancy: Completing a Cut Set}
+
+    Partial redundancy at p: redundant on some but not all paths
+
+    \begin{itemize}
+        \item Add operations to create a cut set containing a+b
+        \item Note: Moving operations up can eliminate redundancy
+    \end{itemize}
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.5\textwidth]{p107.png}
+             \caption{Partial Redundancy}
+             \label{fig:p107}
+    \end{figure}
+\end{definition}
+
+
+
+\subsection{Pass 1: Anticipated Expression}
+
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+   \hline Direction & Backword\\
+   \hline Domain & Set of expressions\\
+   \hline Meet operator & \( \cap \)\\
+   \hline Boundary & $IN[EXIT] = \phi$ \\  
+   \hline Initialization for internal nodes & \( IN[B] = \{ all expressions\} \) \\
+   \hline Finited escending chain? &\checkmark  \\
+   \hline Transferfunction  & \( f_b(x) = EUse_b \cup (x - EKill_b) \)\\
+   \hline Monotone\&Distributive?  & \checkmark \\
+   \hline \( EUse_b \) & set of expressions computed in B (EUse, UEEXP). \\
+   \hline \( EKill_b \) &set of expressions any of whose operands are defined in B \\
+   \hline
+   \end{tabular}  
+   \end{center}
+
+
+
+\subsection{Where to insert/move instructions?}
+
+\subsubsection{Choice 1 : frontier of anticipation}
+
+
+
+
+What is the result if we insert t = a + b at the frontier of anticipation ?
+i.e., those BBs for which a + b is anticipated to the entry of BB, but not anticipated
+to the entry of its parents.?
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{p110.png}
+         \caption{Frontier may be good for this example.}
+         \label{fig:p110}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{p108.png}
+         \caption{Frontier are clolored in yellow. Frontier of anticipation may be not a good choice. For this example, 
+         if we insert t = a + b at the frontier of anticipation, this doesn't eliminate redundancy within loop!}
+         \label{fig:p108}
+\end{figure}
+
+
+
+\begin{figure}[H]
+    \centering
+     \includegraphics[width=0.8\textwidth]{p109.png}
+         \caption{This example can also illustrate frontier is not our choice. In fact, we ideally like to insert “a+b” in this case to the left BB.}
+         \label{fig:p109}
+\end{figure}
+
+
+How to find such anticipated frontier and exclude “those not
+needed blocks” discussed in previous loop examples? Our final solution: 
+Place expression at “anticipated” but not “will be
+available” blocks
+
+\subsection{Pass 2: Place As Early As Possible}
+
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+   \hline Name & Available Expressions\\    
+   \hline Direction & Forward\\
+   \hline Transferfunction  & \( f_b(x) = (Anticipated[b].in \cup x ) - EKill_b \)\\
+   \hline Domain & Set of expressions\\
+   \hline Meet operator & \( \cap \)\\
+   \hline Boundary & $OUT[Entry] = \phi$ \\  
+   \hline Initialization for internal nodes & \( OUT[B] = \{ all expressions\} \) \\
+   \hline
+   \end{tabular}  
+   \end{center}
+
+
+   \[
+     \mathrm{earliest[b] = anticipated[b] - available[b]}
+   \]
+
+
+   \subsection{Pass 3: Lazy Code Motion}
+The values of expressions found to be redundant are usually
+held in registers until they are used. Computing a value as late as possible minimizes its lifetime:
+the duration between the time the value is defined and the
+time it is last used. Minimizing the lifetime of a value in turn minimizes the usage of
+a register. 
+
+
+\begin{definition}{postponable}
+
+    An expression e is postponable at a program point p if
+    \begin{itemize}
+    \item all paths leading to p have seen earliest placement of e
+    \item but not a subsequent use
+    \end{itemize}
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.6\textwidth]{p111.png}
+             \caption{An example to illustrate Postponable Expressions.}
+             \label{fig:p111}
+    \end{figure}
+\end{definition}
+
+
+
+
+    \begin{center}
+        \begin{tabular}{|c|c|}
+       \hline Name & Postponable Expressions\\    
+       \hline Direction & Forward\\
+       \hline Transferfunction  & \( f_b (x) = (earliest[b] \cap x) - EUse_b \)\\
+       \hline Domain & Set of expressions\\
+       \hline Meet operator & \( \cap \)\\
+       \hline Boundary & $OUT[Entry] = \phi$ \\  
+       \hline Initialization for internal nodes & \( OUT[B] = \{ all expressions\} \) \\
+       \hline
+       \end{tabular}  
+       \end{center}
+
+
+       \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.6\textwidth]{p112.png}
+             \caption{An example to illustrate Postponable.}
+             \label{fig:p112}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.6\textwidth]{p113.png}
+             \label{fig:p113}
+    \end{figure}
+
+
+
+    \begin{figure}[H]
+        \centering
+         \includegraphics[width=0.6\textwidth]{p114.png}
+         \caption{An example to illustrate “Latest”.}
+             \label{fig:p114}
+    \end{figure}
+
+\subsection{Pass 4: Cleaning Up}
+
+
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+   \hline Name & Used Expressions\\    
+   \hline Direction & Backward\\
+   \hline Transferfunction  & \( f_b (x) = (EUse[b] \cap x) - latest[b] \)\\
+   \hline Domain & Set of expressions\\
+   \hline Meet operator & \( \cup \)\\
+   \hline Boundary & $in[exit] = \phi$ \\  
+   \hline Initialization for internal nodes & \( in[b] = \phi \)  \\
+   \hline
+   \end{tabular}  
+   \end{center}
+
+
+   For all basic blocks b, if (x+y) $\in$ (latest[b] $\cap$ used.out[b]), at beginning of b:
+   add new t = x+y, then replace every original x+y by t
 
 % \begin{definition}{Cut Set}
 % A cut set are nodes that separate entry from p. a cut set contains calculation of a+b
