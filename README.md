@@ -23,7 +23,7 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] LICM
 - [X] Strength Reduction
 - [X] PRE
-- [ ] Lazy Code Motion
+- [X] Lazy Code Motion
 - [ ] Region Analysis
 - [ ] Register Allocation
 - [ ] List Scheduling
