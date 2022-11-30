@@ -24,11 +24,12 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] Strength Reduction
 - [X] PRE
 - [X] Lazy Code Motion
-- [ ] Region Analysis
+- [X] Region Analysis
+- [ ] Pointer Analysis
+- [X] Dynamic Code Optimizations
 - [ ] Register Allocation
 - [ ] List Scheduling
 - [ ] Global Scheduling SW Pipelining
-- [ ] Dynamic Code optimizations
 - [ ] DSL
 - [ ] Data Prefetching
 - [ ] Parallelism
