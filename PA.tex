@@ -71,3 +71,47 @@ only components of a program?
 \textbf{ Alias representation:} Is an explicit alias representation [51, 64] or a points-to/compact representation used?
 
 
+\subsection{Flow-Sensitivity}
+
+Flow-sensitive pointer analysis respects a program’s control flow
+and computes a separate solution for each program point, in contrast to a flow-insensitive analysis, 
+which ignores statement ordering and computes a single solution that is conservatively correct for
+all program points.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{p127.jpg}
+	\caption{Flow-sensitive vs. flow-insensitive analysis}
+	\label{fig:p127}
+\end{figure}
+
+
+\subsection{Context-sensitive }
+
+
+Context sensitivity has a most significant impact on analysis precision due to separate
+treatment for each method in the program. In practice, each time analysis considers new
+method call it creates a new structure that represents unique method scope in the memory.
+It treats all read/write operations inside this method in scope of this context and makes this
+information available later for its processing.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{p128.jpg}
+	\caption{Context-sensitive vs. Context-insensitive analysis}
+	\label{fig:p128}
+\end{figure}
+
+
+
+\subsection{Modeling Aggregates}
+A key implementation detail is whether aggregate com-
+ponents are distinguished or summarized into one object.
+C/C++'s weak typing makes this diÆcult to address cor-
+rectly. Thus, most published work does not distinguish ag-
+gregates. However, this diÆculty does not exist in a strongly-
+type language like Java, and therefore, components should
+be distinguished in such languages. Most recent work
+has chosen to distinguish components. Unfortunately, few researchers have studied the impact of this decision.
