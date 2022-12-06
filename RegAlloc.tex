@@ -15,66 +15,183 @@ floating-point and other special purpose registers).
 Most of material below is based on Pereira and Palsberg \cite{pereira2005register}, where
 further background, references, details, empirical evaluation, and examples can be found.
 
-\subsection{Building the Interference Graph}
 
-Two variables need to be assigned to two different registers if they need to
-hold two different values at some point in the program. This question is
-undecidable in general for programs with loops, so in the context of compilers we reduce this to liveness. A variable is said to be live at a given
-program point if it will used in the remainder of the computation. Again,
-we will not be able to able to accurately predict at compile time whether
-this will be the case, but we can approximate liveness through a particular form of dataflow analysis discussed in the next lecture. In our simple
-straight-line expression language, this is particularly easy. We traverse the
-program backwards, starting at the last line. We note that the return register, \%eax, is live after the last instruction. If a variable is live on one line, it
-is live on the preceding line unless it is assigned to. And a variable that is
-used on the right-hand side of an instruction is live for that instruction.
 
-As an example, we consider the simple straight-line computation of the
-fifth Fibonacci number, in our pseudo-assembly language. We list with
-each instruction the variables that are live before the line is executed. These
-are called the variables live-in to the instruction.
+
+\subsection{Graph Coloring}
+
+
+Register allocation via graph coloring, like linear-scan register allocation, considers allocating registers to variables across a whole procedure. However, it uses live ranges instead of live intervals. This addresses the problem mentioned above with linear scan allocation, namely that if there are "holes" in a variable's live interval, then it can be wasteful to tie up a register for the entire live interval (as illustrated below).
 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.4\textwidth]{p153.png}
-	\caption{}
-	\label{fig:p153}
+	\includegraphics[width=0.6\textwidth]{p163.png}
+	\caption{Motivation for graph coloring}
+	\label{fig:p163}
 \end{figure}
 
-The nodes of the interference graph are the variables and registers of the
-program. There is an undirected edge between two nodes if the corresponding variables interfere and should be assigned to different registers.
-There are never edges from a node to itself. We distinguish the two forms
-of instructions.
+
+A live range is a pair of the form: (<variable>, <set of CFG nodes>). A live range for variable x is roughly all of the nodes of the control flow graph starting from a definition of x, up to all the uses of x reached by that definition.
+If two live ranges don't overlap then they can use the same register. For example:
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p164.png}
+	\caption{Motivation for graph coloring}
+	\label{fig:p164}
+\end{figure}
+
+
+The algorithm for global register allocation via graph coloring consists of 4 steps:
+\begin{itemize}
+	\item Step 1: Compute live ranges
+	\item Step 2: Build the interference graph
+	\item Step 3: Color the graph
+	\item Step 4: Convert colors to registers
+\end{itemize}
+
+
+\subsubsection{Step 1: compute live ranges}
 
 \begin{itemize}
-    \item For an instruction t $\leftarrow$ s1 $\oplus$ 
-    s2 we create an edge between t and any
-    different variable $t_i$ live after this line. t and $t_i$ should be assigned to
-    different registers, because otherwise the assignment to t could destroy the proper contents of $t_i$
-    .
-    \item For a move instruction t $\leftarrow$ s we create an edge between t and any
-    variable $t_i$
-    live after this line different from t and s. We omit the potential edge between t and s because if they happen to be assigned to the same register, they still hold the same value after this (now redundant) move. Of course, there may be other occurrences of t and s
-    which force them to be assigned to different registers.
-\end{itemize}    
+	\item Build the CFG.
+	\item Do reaching defs and live variable analysis.
+	      Note: the variables of interest are those that are candidates for registers. Variables that are not candidates might include:
+	      \begin{itemize}
+		      \item variables that could be aliased:
+		            \begin{itemize}
+			            \item variables that could be pointed to
+			            \item globals (also, could be changed in calls to functions that won't know which register the global is in)
+		            \end{itemize}
+		      \item array elements (too hard to tell which element is being referred to)
+		      \item structs/unions (too big to fit in a register, too hard to deal with individual fields)
+		      \item floating-point values (too big to fit in a single register; also, on machines like the Sparc, floating-point registers are not saved across calls)
+	      \end{itemize}
+		  What's left: locals that are scalar, and not floating point. This might include parameters, though they are sometimes more difficult to handle than "plain" locals.
+	\item 	Build initial live ranges:  
+	\begin{itemize}
+		\item For each CFG node D that defines variable x, the initial live range for D consists of:
 
-For the above example, we obtain the following interference graph.
+		\(( <x>, <\{D\} \texttt{  union } \{N | \texttt{x in N.live-before and D in N.reaching-defs-before}\}> ) \)
+		Note: the live range is a pair: the variable defined at D, and the set of nodes in the range.
+		\item Convert initial live ranges to final live ranges (collapse overlapping initial live ranges for the same variable):
+
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\textwidth]{p165.png}
+			\caption{}
+			\label{fig:p165}
+		\end{figure}
+
+
+	\end{itemize}
+\end{itemize}
+
+
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.4\textwidth]{p154.png}
+	\includegraphics[width=0.6\textwidth]{p166.png}
 	\caption{}
-	\label{fig:p154}
+	\label{fig:p166}
 \end{figure}
 
-Here, the register \%eax is special, because, as a register, it is already predefined and cannot be arbitrarily assigned to another register. Special care
-must be taken with predefined registers during register allocation. 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p168.png}
+	\caption{}
+	\label{fig:p168}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p167.png}
+	\caption{}
+	\label{fig:p167}
+\end{figure}
+
+
+\subsubsection{Step 2 - Build the Interference Graph}
+
+\begin{itemize}
+	\item 1 node for each live range
+	\item 1 undirected edge n-m iff n intersect m != \{\}
+\end{itemize}	
+
+
+Here is the graph for the live ranges shown above; the colors used above to encircle the live ranges are used to color the nodes of the interference graph.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p169.png}
+	\caption{}
+	\label{fig:p169}
+\end{figure}
+
+% \subsection{Building the Interference Graph}
+
+% Two variables need to be assigned to two different registers if they need to
+% hold two different values at some point in the program. This question is
+% undecidable in general for programs with loops, so in the context of compilers we reduce this to liveness. A variable is said to be live at a given
+% program point if it will used in the remainder of the computation. Again,
+% we will not be able to able to accurately predict at compile time whether
+% this will be the case, but we can approximate liveness through a particular form of dataflow analysis discussed in the next lecture. In our simple
+% straight-line expression language, this is particularly easy. We traverse the
+% program backwards, starting at the last line. We note that the return register, \%eax, is live after the last instruction. If a variable is live on one line, it
+% is live on the preceding line unless it is assigned to. And a variable that is
+% used on the right-hand side of an instruction is live for that instruction.
+
+% As an example, we consider the simple straight-line computation of the
+% fifth Fibonacci number, in our pseudo-assembly language. We list with
+% each instruction the variables that are live before the line is executed. These
+% are called the variables live-in to the instruction.
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.4\textwidth]{p153.png}
+% 	\caption{}
+% 	\label{fig:p153}
+% \end{figure}
+
+% The nodes of the interference graph are the variables and registers of the
+% program. There is an undirected edge between two nodes if the corresponding variables interfere and should be assigned to different registers.
+% There are never edges from a node to itself. We distinguish the two forms
+% of instructions.
+
+% \begin{itemize}
+% 	\item For an instruction t $\leftarrow$ s1 $\oplus$
+% 	      s2 we create an edge between t and any
+% 	      different variable $t_i$ live after this line. t and $t_i$ should be assigned to
+% 	      different registers, because otherwise the assignment to t could destroy the proper contents of $t_i$
+% 	      .
+% 	\item For a move instruction t $\leftarrow$ s we create an edge between t and any
+% 	      variable $t_i$
+% 	      live after this line different from t and s. We omit the potential edge between t and s because if they happen to be assigned to the same register, they still hold the same value after this (now redundant) move. Of course, there may be other occurrences of t and s
+% 	      which force them to be assigned to different registers.
+% \end{itemize}
+
+% For the above example, we obtain the following interference graph.
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.4\textwidth]{p154.png}
+% 	\caption{}
+% 	\label{fig:p154}
+% \end{figure}
+
+% Here, the register \%eax is special, because, as a register, it is already predefined and cannot be arbitrarily assigned to another register. Special care
+% must be taken with predefined registers during register allocation.
 
 
 
 
 \subsection{ Register Allocation via Graph Coloring}
 
-
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.4\textwidth]{p154.png}
+	\caption{}
+	\label{fig:p154}
+\end{figure}
 Once we have constructed the interference graph, we can pose the register
 allocation problem as follows: construct an assignment of K colors (representing K registers) to the nodes of the graph (representing variables)
 such that no two connected nodes are of the same color. If no such coloring exists, then we have to save some variables on the stack which is called
@@ -148,19 +265,19 @@ coloring phase, but does not guarantee that only the minimal numbers of colors w
 	\label{fig:p156}
 \end{figure}
 
-In our example \ref{fig:p154},if we pick $f_1$ first, the weight of $f_2$ will become 1 and has 
-to be picked second, followed by $f_3$ and $f_4$. 
+In our example \ref{fig:p154},if we pick $f_1$ first, the weight of $f_2$ will become 1 and has
+to be picked second, followed by $f_3$ and $f_4$.
 Only $f_5$ is left and will come last, ignoring here
-\%eax which is already colored. It is easy to see that this is indeed a simplicial 
+\%eax which is already colored. It is easy to see that this is indeed a simplicial
 elimination ordering. $f_2, f_4, f_3,\dots$ is not, because the neighborhood of
 f3 in the subgraph $f_2, f_4, f_3$ does not form a clique.
 
 
 \subsection{Greedy Coloring}
 
-Given an ordering, we can apply greedy coloring by simply assigning colors to the 
+Given an ordering, we can apply greedy coloring by simply assigning colors to the
 vertices in order, always using the lowest available color. Initially,
-no colors are assigned to nodes in $V$ . We write $\Delta(G)$ to the maximum 
+no colors are assigned to nodes in $V$ . We write $\Delta(G)$ to the maximum
 outdegree of a node in G.
 
 
