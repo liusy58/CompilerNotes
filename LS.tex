@@ -1,0 +1,223 @@
+\newpage
+
+
+\section{List Scheduling}
+
+Instruction scheduling\cite{cooper1998experimental} plays a critical role in determining the performance of compiled code on today’s
+computers. Today’s microprocessors rely on the compiler to hide memory latencies and to keep functional
+units busy—both are tasks for the instruction scheduler. On the microprocessors of tomorrow, the quality
+of instruction scheduling may be more important, since these machines will feature longer memory latencies
+and more functional units. List scheduling is the most widely used technique for instruction scheduling.
+
+
+Before scheduling, the compiler applies a series of optimizations to the iloc code. This includes pointer
+analysis, dead code elimination, global value numbering, lazy code motion, constant propagation, strength
+reduction, register coalescing, dead code elimination, and empty block removal. For the purposes of this
+paper, no register allocation was performed; this eliminates interactions between allocation and scheduling
+and isolates the impact of scheduling.
+
+After optimization, the compiler passes the code to the scheduler. Each block is scheduled individually.
+The first step constructs a data-precedence graph (DPG) for the block. The DPG $G = (N, E, E^\prime)$ has a node
+ $n \in N$  for each operation. Edges $e = (n_i, n_j) \in E$ represent dependences between operations; their direction
+matches the flow of values. Edges in $E^\prime$ represent anti-dependences in the code that prevent reordering. An
+anti-edge $e = (n_i, n_j) \in E^\prime$
+indicates that moving $n_j$ before $n_i$ would change the flow of values because of
+a name that $n_i$ uses and $n_j$ redefines. The details of the individual schedulers vary.
+
+To evaluate the schedules, we use several variations on a simple processor model. Each architecture
+consists of k identical pipelined functional units. Each functional unit can execute any iloc operation. For
+our experiments, we vary k between one and three. Each iloc operation has a latency—the number of cycles
+required before its results are available. Register values are read in the cycle when the instruction begins
+execution, and results are defined in the last cycle of its latency. Thus, an operation u can begin execution
+when all operations $v |(v, u) \in E$ have completed, and all operations $w |(u, w) \in E^\prime$ have already been issued.
+
+
+
+\subsection{Data-precedence graph}
+
+
+A data dependency in computer science is a situation in which a program statement (instruction) refers to the data of a preceding statement. In compiler theory, the technique used to discover data dependencies among statements (or instructions) is called dependence analysis.
+
+
+\subsubsection{Flow dependency (True dependency)}
+
+A Flow dependency, also known as a data dependency or true dependency or read-after-write (RAW), occurs when an instruction depends on the result of a previous instruction: also known as name dependency
+
+
+\begin{center}
+1. A = 3\\
+2. B = A\\
+3. C = B
+\end{center}
+Instruction 3 is truly dependent on instruction 2, as the final value of C depends on the instruction updating B. Instruction 2 is truly dependent on instruction 1, as the final value of B depends on the instruction updating A. Since instruction 3 is truly dependent upon instruction 2 and instruction 2 is truly dependent on instruction 1, instruction 3 is also truly dependent on instruction 1. Instruction level parallelism is therefore not an option in this example.
+
+\subsubsection{Anti-dependency}
+An anti-dependency, also known as write-after-read (WAR), occurs when an instruction requires a value that is later updated. In the following example, instruction 2 anti-depends on instruction 3 — the ordering of these instructions cannot be changed, nor can they be executed in parallel (possibly changing the instruction ordering), as this would affect the final value of A.
+\begin{center}
+    1. B = 3 \\
+    2. A = B + 1 \\
+    3. B = 7
+    \end{center}
+
+Example :
+\begin{center}
+    MUL R3,R1,R2 \\
+    ADD R2,R5,R6
+    \end{center}
+    It is clear that there is anti-dependence between these 2 instructions. At first we read R2 then in second instruction we are Writing a new value for it.
+
+    An anti-dependency is an example of a name dependency. That is, renaming of variables could remove the dependency, as in the next example:
+    \begin{center}
+        1. B = 3 \\ 
+        N. B2 = B \\
+        2. A = B2 + 1 \\
+        3. B = 7
+        \end{center}
+    A new variable, B2, has been declared as a copy of B in a new instruction, instruction N. The anti-dependency between 2 and 3 has been removed, meaning that these instructions may now be executed in parallel. However, the modification has introduced a new dependency: instruction 2 is now truly dependent on instruction N, which is truly dependent upon instruction 1. As flow dependencies, these new dependencies are impossible to safely remove. 
+
+\subsubsection{Output dependency}
+
+An output dependency, also known as write-after-write (WAW), occurs when the ordering of instructions will affect the final output value of a variable. In the example below, there is an output dependency between instructions 3 and 1 — changing the ordering of instructions in this example will change the final value of A, thus these instructions cannot be executed in parallel.
+
+\begin{center}
+    1. B = 3 \\ 
+    2. A = B + 1 \\
+    3. B = 7
+    \end{center}
+As with anti-dependencies, output dependencies are name dependencies. That is, they may be removed through renaming of variables, as in the below modification of the above example:
+\begin{center}
+    1. B2 = 3 \\
+    2. A = B2 + 1 \\
+    3. B = 7
+    \end{center}
+
+
+A commonly used naming convention for data dependencies is the following: Read-after-Write or RAW (flow dependency), Write-After-Read or WAR (anti-dependency), or Write-after-Write or WAW (output dependency).
+
+\subsection{The List Scheduling Algorithm}
+
+Here we describe our implementation of list scheduling. First, the dpg is built as described in the previous
+section. Next, priorities are assigned to each node in the graph. There are several different heuristics that
+can be used to assign priorities. A common and effective strategy is to use the latency weighted depth of the
+node \cite{gibbons1986efficient,landskov1980local}. The depth of a node n is the length (number of nodes) of the longest path in the dpg from n to
+some leaf (including n and the leaf.) The latency weighted depth is computed the same way, but the nodes
+along the path are weighted using the latency of the operation the node represents. The following formula
+summarizes the priority computation for a node n:
+
+$$
+\operatorname{priority}(n)=\max \left(\forall_{l \in \text { leaves }(D P G)} \forall_{p \in \operatorname{paths}(n, \ldots, l)} \sum_{p_i=n}^l \text { latency }\left(p_i\right)\right)
+$$
+
+Dynamic programming can be used to compute the priorities efficiently, and we take into consideration
+the anti-edges described above:
+
+$$
+\operatorname{priority}(n)=\left\{\begin{array}{cc}
+\operatorname{latency}(n) & \text { if } n \text { is a leaf. } \\
+\max \left(\operatorname{latency}(n)+\max _{(m, n) \in E}(\text { priority }(m)),\right. & \\
+\left.\max _{(m, n) \in E^{\prime}}(\text { priority }(m))\right) & \text { otherwise. }
+\end{array}\right.
+$$
+The final phase is the actual list scheduling algorithm that constructs the schedule for the block. Starting
+at cycle 0, the list scheduler places operations into the schedule cycle by cycle. Any operation that is “ready”
+at cycle X (i.e. all its operands have been computed), is a candidate to be scheduled at cycle X. The priorities
+computed in the previous step are used to determine which ready operation to schedule, by selecting the
+highest priority operation first. Any tie in the priority of two operations is broken arbitrarily. The algorithm
+is detailed in Figure\ref{fig:p170}. Through the rest of the paper we refer to this algorithm as ls.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{p170.png}
+	\caption{List Scheduling algorithm}
+	\label{fig:p170}
+\end{figure}
+
+
+\subsection{List Scheduling Alternatives}
+
+Here we present two alternatives to the ls algorithm discussed in the last section. For a survey of scheduling
+techniques see . A machine learning approach to scheduling has been developed by Moss and others.
+
+
+
+\subsubsection{Random Tie Breaking}
+
+A traditional list scheduler returns a single solution by breaking any ties in the priority of two or more
+operations arbitrarily. By running the list scheduler several times and breaking ties randomly, we could
+potentially generate more and better solutions. Figure\ref{fig:p171} is an example from the tomcatv benchmark. Assume
+all load immediates (LDI) take one cycle, all add operations (ADD) take two cycles, and the copy (i2i) takes
+one cycle. Assume we are scheduling on a machine with two identical functional units. The numbers next
+to the operations are the priority values that list scheduling uses. In this figure we see two different list
+schedules that could be generated from the dpg. The second one requires one less cycle. The critical decision
+comes in the second cycle, where the tie between the LDId and LDIc must be broken. Scheduling LDId early
+enough results in a shorter schedule.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p171.png}
+	\caption{Example block from tomcatv}
+	\label{fig:p171}
+\end{figure}
+
+\subsubsection{Backward list scheduling}
+In addition, there are some blocks for which a backward list scheduler can generate a better solution. A
+backward list scheduler works by reversing the direction of all edges in dpg, and scheduling the finish times
+of each operation. (Note that the start time of operations must be used to ensure enough available functional
+units for a given cycle.) This technique tends to cluster operations toward the end of the schedule instead
+of the beginning like a forward list scheduler. For an example of a block that benefits from backward list
+scheduling see Figure \ref{fig:p172}, which shows a block from the go benchmark. Assume there are two integer units
+that can execute the LDI operations (one cycle), the LSL operation (one cycle), the ADD operations (two
+cycles), ADDI operation (one cycle), and the CMP operation (one cycle). A separate memory unit executes
+the ST operations (four cycles). All functional units are completely pipelined. A forward list scheduler will
+schedule the four LDI operations and the the LSL before scheduling any of the ADD operations. This delays
+the start of the higher latency store operations (ST). A better schedule can be found by a backward list
+scheduler as shown in the example.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p172.png}
+	\caption{Example block from go, showing the benefits of backward list scheduling}
+	\label{fig:p172}
+\end{figure}
+
+
+\subsection{Iterative Repair Scheduling}
+
+
+Here we introduce the application of a repair based scheduling technique called “iterative repair” to the
+problem of instruction scheduling in a compiler. This algorithm comes from the AI community and is described by Lin and 
+Kernighan\cite{lin1973effective}, and Zweben, et. al.\cite{zweben1992scheduling,zweben1992learning}. The technique has shown promise for several
+scheduling problems including space shuttle mission scheduling.
+
+The generalized algorithm is presented in figure\ref{fig:p173}. The idea is straightforward. First, create an instruction
+schedule that begins each operation as early as possible with respect to the precedence constraints of the dpg,
+but ignores the resource constraints imposed by the limited number of processing elements. Now “repair” the
+schedule by moving operations that have a resource conflict to a point later in the schedule. This reduces the
+number of resource conflicts for the cycle being repaired. A resource conflict is simply a point in the schedule
+where more operations are scheduled than the available number of functional units. The earliest cycle with a
+conflict is found, and one of the conflicting operations is selected (line (1) in the algorithm). This operation
+and all operations that depend on it are removed from the schedule (called unscheduling). The selected
+operation and its dependent operations are then inserted back into the schedule (called rescheduling) at a
+later point (line (2) in the algorithm). We continue repairing the schedule until there are no more resource
+conflicts. The algorithm is run a “user specified” number of times, and the shortest schedule over all the
+trials is selected as the final schedule.
+
+We have tested several new variations of the iterative repair scheduling algorithm. The most effective
+one to date we refer to as ir-bias. In ir-bias the selection of which node to move (called the move-node) is
+not completely random. Rather, operations with lower priority values (the same priority values as used by
+the list scheduler) are more likely to be moved. The selection is probabilistic; the probability that a node is
+selected is inversely related to its priority.
+
+The move-node is scheduled one cycle later than its original position. All successor nodes are rescheduled
+as early-as-possible with respect to this new start time. This could cause additional conflicts to be created
+later in the schedule, but a future repair will correct any new conflicts. After each repair we compare the
+length of the new schedule to that of the old schedule. If the new length is greater, the repair is ignored,
+the state of the previous schedule is restored, and a new move-node is selected. A new schedule with a
+greater length than the previous schedule is kept ten per cent of the time to avoid local minima. 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{p173.png}
+	\caption{Basic Iterative Repair Scheduling algorithm}
+	\label{fig:p173}
+\end{figure}

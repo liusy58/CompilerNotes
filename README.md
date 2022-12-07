@@ -26,9 +26,9 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] Lazy Code Motion
 - [X] Region Analysis
 - [X] Pointer Analysis
-- [X] Dynamic Code Optimizations
 - [X] Register Allocation
-- [ ] List Scheduling
+- [X] List Scheduling
+- [ ] Dynamic Code Optimizations
 - [ ] Global Scheduling SW Pipelining
 - [ ] DSL
 - [ ] Data Prefetching
