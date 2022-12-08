@@ -36,7 +36,7 @@ when all operations $v |(v, u) \in E$ have completed, and all operations $w |(u,
 \subsection{Data-precedence graph}
 
 
-A data dependency in computer science is a situation in which a program statement (instruction) refers to the data of a preceding statement. In compiler theory, the technique used to discover data dependencies among statements (or instructions) is called dependence analysis.
+A data dependency\cite{Datadepe9:online} in computer science is a situation in which a program statement (instruction) refers to the data of a preceding statement. In compiler theory, the technique used to discover data dependencies among statements (or instructions) is called dependence analysis.
 
 
 \subsubsection{Flow dependency (True dependency)}
@@ -85,11 +85,12 @@ An output dependency, also known as write-after-write (WAW), occurs when the ord
     3. B = 7
     \end{center}
 As with anti-dependencies, output dependencies are name dependencies. That is, they may be removed through renaming of variables, as in the below modification of the above example:
+
 \begin{center}
     1. B2 = 3 \\
     2. A = B2 + 1 \\
     3. B = 7
-    \end{center}
+\end{center}
 
 
 A commonly used naming convention for data dependencies is the following: Read-after-Write or RAW (flow dependency), Write-After-Read or WAR (anti-dependency), or Write-after-Write or WAW (output dependency).
