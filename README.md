@@ -28,7 +28,7 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] Pointer Analysis
 - [X] Register Allocation
 - [X] List Scheduling
-- [ ] Dynamic Code Optimizations
+- [X] Dynamic Code Optimizations
 - [ ] Global Scheduling SW Pipelining
 - [ ] DSL
 - [ ] Data Prefetching
