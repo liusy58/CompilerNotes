@@ -2,7 +2,7 @@
 
 \section{Dynamic Code Optimization}
 
-Most materials are based on \cite{whaley2001partial} in this section.
+Most materials are based on \cite{whaley2001partial,stadler2014partial} in this section.
 
 Dynamic compilation systems explore an interesting tradeoff. On one hand, we would like to have code performance
 that is comparable to static compilation techniques. However, we would also like to avoid long startup delays, long
@@ -67,7 +67,7 @@ that do not matter.
 	\centering
 	\includegraphics[width=0.5\textwidth]{p174.png}
 	\caption{From spec db. Method boundaries do not
-    correspond well to where the time is actually spent.}
+		correspond well to where the time is actually spent.}
 	\label{fig:p174}
 \end{figure}
 
@@ -98,7 +98,7 @@ We now describe each step of the process in detail.
 
 
 \textbf{1. Based on profile data, determine the set of rare
-blocks.}
+	blocks.}
 The entry points of the rare basic blocks
 are mapped to abstract program locations, which then used to mark basic blocks as rare in the compiler’s
 intermediate representation.
@@ -115,7 +115,7 @@ live variable analysis to determine the set of live variables at rare block entr
 \end{figure}
 
 \textbf{3. Redirect the control flow edges that targeted
-rare blocks, and remove the rare blocks.}
+	rare blocks, and remove the rare blocks.}
 For each control flow edge from a non-rare block to a
 rare block, we generate a new basic block containing
 a single instruction that transfers control to the interpreter. This instruction uses all local variables and
@@ -130,14 +130,14 @@ as unreachable code.
 	\centering
 	\includegraphics[width=0.5\textwidth]{p177.png}
 	\caption{An example of redirecting the rare path.
-    On the left, the dotted block is rare, so we redirect
-    it to a block that calls the interpreter.}
+		On the left, the dotted block is rare, so we redirect
+		it to a block that calls the interpreter.}
 	\label{fig:p177}
 \end{figure}
 
 \textbf{4. Perform compilation normally.}
 All analysis, optimization, and code generation proceeds normally. Analyses treat the interpreter transfer
-point as an unanalyzable method call. 
+point as an unanalyzable method call.
 
 \begin{figure}[H]
 	\centering
@@ -147,7 +147,7 @@ point as an unanalyzable method call.
 \end{figure}
 
 \textbf{5. Record a map for each interpreter transfer
-point.}
+	point.}
 When generating the code to call the glue routine, we
 also generate a map that specifies the location, in registers or memory, of each of the local variables and
 Java stack locations used in the original Java bytecode.
@@ -160,7 +160,7 @@ typically under 100 bytes long.
 	\centering
 	\includegraphics[width=0.5\textwidth]{p179.png}
 	\caption{In code generation, generate a map that specifies the location, in registers
-    or memory, of each of the live variables used to reconstruct the interpreter state}
+		or memory, of each of the live variables used to reconstruct the interpreter state}
 	\label{fig:p179}
 \end{figure}
 
@@ -223,3 +223,229 @@ rare block does not violate exception or memory semantics.
 	\caption{Partial Dead Code Example.}
 	\label{fig:p180}
 \end{figure}
+
+
+\subsection{Escape Analysis\cite{stadler2014partial}}
+
+Escape Analysis checks whether an allocated object escapes
+(i.e., can be used outside) the allocating method or
+thread. This happens, for example, if it is assigned to a
+global variable or heap object, or if it is passed as a parameter
+to some other method. Compilers use Escape Analysis
+to determine the dynamic scope and the lifetime of allocated objects.
+The result of this analysis allows the compiler to perform numerous
+optimizations on operations such
+as object allocations, synchronization primitives and field
+accesses.
+
+
+
+Figure \ref{fig:p181} shows a small piece of code that will serve as an
+example to show the benefits of Escape Analysis:
+The \texttt{getValue} method creates a new \texttt{Key} object and checks whether
+it is in the cache. If so, the method returns the cached value.
+Otherwise, it creates and returns a new value (the method
+\texttt{createValue} is not discussed here).
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p181.png}
+	\caption{Simple example.}
+	\label{fig:p181}
+\end{figure}
+
+
+
+When \texttt{getValue} is compiled, the compiler will most
+likely
+perform some inlining, which might cause the actually
+compiled code to look like \ref{fig:p182}.
+The Key constructor and the
+equals method have been inlined into the getValue method,
+and a \texttt{synchronized } block was created to achieve synchronization on the inlined equals method.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p182.png}
+	\caption{ Example from Figure \ref{fig:p181} after inlining.}
+	\label{fig:p182}
+\end{figure}
+
+
+When Escape Analysis examines the resulting method,
+it will come to the conclusion that no reference to the
+allocated \texttt{Key} object escapes from the
+current compilation scope.
+
+This implies that no references to the object exist after the
+method has returned, and that no other thread can ever
+see a reference to this object. The compiler can use these
+observations to perform a number of optimizations:
+\begin{itemize}
+	\item  The allocation of the object on the garbage collected
+	      heap can be replaced with allocation on the stack or
+	      in other non-garbage-collected allocation areas such as
+	      zones.
+	\item Scalar Replacement can be used to eliminate the allocation altogether, by replacing the fields of the object
+	      with local variables.
+	\item Since the object’s lock will never be contended,Lock
+	      Elision can remove the synchronization on \texttt{key}.
+\end{itemize}
+
+
+
+If the compiler uses Scalar Replacement and Lock Elision,
+the result might look like in Figure \ref{fig:p183}.
+The allocation was
+replaced with the local variables \texttt{idx1} and
+\texttt{ref1}, and the
+\texttt{synchronized} statement was removed entirely.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p183.png}
+	\caption{ Example from Figure \ref{fig:p182} after inlining.}
+	\label{fig:p183}
+\end{figure}
+
+Traditionally, Escape Analysis uses algorithms such as
+Equi-Escape Sets \cite{kotzmann2005escape} to determine which objects escape from
+the scope. These algorithms build sets of objects that have
+the same escape state, with each object initially being in a
+separate set. By analyzing all operations in the method the
+system can merge sets (e.g., when an object in one set is assigned to a field of an object in another set), or mark a
+set as escaping (e.g., when an object in this set is assigned
+to a global variable).
+
+\subsection{PARTIAL ESCAPE ANALYSIS}
+
+
+Escape Analysis allows a compiler to determine whether an
+object is accessible outside the allocating method or thread.
+This information is used to perform optimizations such as
+Scalar Replacement, Stack Allocation and Lock Elision, allowing modern dynamic compilers to remove some of the
+abstractions introduced by advanced programming models.
+
+
+
+
+
+
+
+State-of-the-art Virtual Machines employ techniques such
+as advanced garbage collection, alias analysis and biased
+locking to make working with dynamically allocated objects
+as efficient as possible. But even if allocation is cheap, it
+still incurs some overhead. Even if alias analysis can remove
+most object accesses, some of them cannot be removed. And
+although acquiring a biased lock is simple, it is still more
+complex than not acquiring a lock at all.
+
+Escape Analysis can be used to determine whether an object needs to be allocated at all, and whether its lock can
+ever be contended. This can help the compiler to get rid of
+the object’s allocation, using Scalar Replacement to replace
+the object’s fields with local variables.
+
+Escape Analysis checks whether an object escapes its allocating method, i.e., whether it is accessible outside this
+method. An object escapes, for example, if it is assigned
+to a static field, if it is passed as an argument to another
+method, or if it is returned by a method. In these cases the
+object needs to exist on the heap, because it will be accessed
+as an object in some other context.
+
+In many cases, however, an object escapes just in a single
+unlikely branch. Nevertheless, this prevents optimizations.
+Therefore, we suggest a flow-sensitive Escape Analysis which
+we call Partial Escape Analysis.
+
+The idea behind Partial Escape Analysis is to perform optimizations such as Scalar Replacement in branches where
+the object does not escape, and make sure that the object
+exists in the heap in branches where it does escape.
+
+
+In many cases, making a global decision about the escapability of objects does not allow the compiler to perform the
+above optimizations. For example, the object allocated in
+Figure \ref{fig:p184}  escapes into the global variable \texttt{cacheKey}, so that
+Escape Analysis would consider it to be escaping.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p184.png}
+	\caption{Complex example.}
+	\label{fig:p184}
+\end{figure}
+
+However, if we only consider the path through the true
+branch of the if statement, the object does not escape. Analyzing the escapability of objects for individual branches is
+called Partial Escape Analysis. Partial Escape Analysis iterates over the code and maintains the current escape state
+and the current contents of allocated objects during this
+process. Initially, each allocated object is in the state \texttt{virtual}, which means that there was no reason yet to actually
+allocate it. As the algorithm progresses along the control
+flow, it updates this state when instructions operate on the
+allocated object.
+
+
+The transition from Figure \ref{fig:p185} to Figure \ref{fig:p186} shows how Partial Escape Analysis lets the compiler optimize the code in
+this example:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p185.png}
+	\caption{Example from \ref{fig:p184} after inlining.}
+	\label{fig:p185}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{p186.png}
+	\caption{ Example from  \ref{fig:p185} after Partial
+		Escape Analysis.}
+	\label{fig:p186}
+\end{figure}
+
+
+
+\begin{itemize}
+
+\item The allocation in line 2 is removed, and an entry for
+this object is created that specifies that it is \texttt{virtual}
+and that all fields have their default values.
+\item The assignments to the fields \texttt{idx} and \texttt{ref }in lines 3
+and 4 are removed, and their effects are remembered
+by updating the object’s field states.
+\item When entering the \texttt{synchronized } region in line 7, the
+object is still \texttt{virtual}. The monitor enter operation is
+removed, and the object’s state is augmented with a
+\texttt{locked } flag that specifies that this object would have
+been \texttt{locked } if it actually existed at this point.
+\item The accesses to the \texttt{idx} and \texttt{ref }fields of the \texttt{virtual}
+object in lines 8 and 9 can be replaced using the object’s current field states.
+\item When exiting the \texttt{synchronized } region in line 10, the
+object is still \texttt{virtual}. Thus, the monitor exit operation is removed, and the \texttt{locked } flag is removed from
+the object’s state.
+\item At the \texttt{if} statement in line 11, a copy of the current
+state is created, because it has to be propagated to
+both successors of this control split.
+\item  When continuing at line 12, the object is still \texttt{virtual},
+and the return statement ends the processing of this
+branch.
+\item  When continuing at line 14, the object is still \texttt{virtual},
+but the assignment to the static field \texttt{cacheKey} lets
+the object escape. In order for it to escape, it needs
+to exist, and therefore the object needs to be created
+and initialized with the current state of its fields at
+this point. This process is called materialization in
+our system. The object is transitioned to the state
+escaped at this point, and the state of its fields cannot
+be used from here on since there could be assignments
+to the fields from outside the compilation scope.
+\item  Lines 15 and 16 do not affect the state of the object
+anymore.
+\end{itemize}
+
+
+In effect, the allocation was moved into one branch of the
+if statement. While this did not lead to fewer allocation
+sites in the resulting code, it reduces the dynamic number
+of allocations at runtime. The actual reduction depends on
+the likelihood of the branch containing the allocation being
+reached, but there will always be at most as many dynamic
+allocations as in the original code.
