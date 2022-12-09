@@ -29,8 +29,8 @@ Buy me a cup of coffee [☕️](https://user-images.githubusercontent.com/459842
 - [X] Register Allocation
 - [X] List Scheduling
 - [X] Dynamic Code Optimizations
+- [X] DSL
 - [ ] Global Scheduling SW Pipelining
-- [ ] DSL
 - [ ] Data Prefetching
 - [ ] Parallelism
 - [ ] TLS
