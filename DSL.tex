@@ -465,6 +465,9 @@ outer products can be implemented much more efficiently as
 a single matrix multiplication \cite{sujeeth2011optiml}. Specifically, it recognizes
 
 
+$$
+\sum_{i=0}^n \vec{x}_i * \vec{y}_i \rightarrow \sum_{i=0}^n X(:, i) * Y(i,:)=X * Y
+$$
 
 The transformed code allocates two matrices, populates
 them by performing the operations required to produce all
