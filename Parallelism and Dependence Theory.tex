@@ -3,20 +3,156 @@
 
 \section{Parallelism and Dependence Theory}
 
+  
+
+
 \subsection{DATA DEPENDENCE}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p197.png}
+	\caption{An example.}
+	\label{fig:p197}
+\end{figure}
+
+
+
+    \begin{itemize}
+    \item Flow (true) dependence: a statement $S_i$ precedes a
+    statement $S_j$ in execution and $S_i$ computes a data value that
+    $S_j$ uses. $S_i \delta^{+} S_j$. In Figure \ref{fig:p197}, $S_1 \delta^{+} S_2$ and $S_2 \delta^{+} S_4$
+
+    \item Anti dependence: a statement $S_i$ precedes a statement $S_j$ in
+    execution and $S_i$ uses a data value that $S_j$ computes. $S_i \delta^{a} S_j$
+    In Figure \ref{fig:p197}, $S_2 \delta^{a} S_3$
+
+    \item Output dependence: a statement $S_i$ precedes a statement $S_j$
+    in execution and $S_i$ computes a data value that $S_j$ also
+    computes. $S_i \delta^{o} S_j$,
+    In Figure \ref{fig:p197}, $S_1 \delta^{o} S_3$ and $S_3 \delta^{o} S_4$
+    \end{itemize}
+
+
+The dependence is said to flow from $S_i$ to $S_j$ because $S_i$
+precedes $S_j$ in execution.
+$S_i$ is said to be the source of the dependence. $S_j$ is said to
+be the sink of the dependence.
+The only “true” dependence is flow dependence; it
+represents the flow of data in the program.
+The other types of dependence are caused by programming
+style; they may be eliminated by re-naming as seen in Figure \ref{fig:p198}.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p198.png}
+	\caption{Dependence other than flow dependence can be eliminated by re-naming for Figure \ref{fig:p197}.}
+	\label{fig:p198}
+\end{figure}
 
 
 
 \subsection{DATA DEPENDENCE DIRECTIONS}
 
+\subsubsection{ = }
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p199.png}
+	\caption{}
+	\label{fig:p199}
+\end{figure}
 
 
+In Figure \ref{fig:p199}, There is an instance of $S_1$ that precedes an instance of $S_2$ in
+execution and $S_1$ produces data that $S_2$ consumes.
+$S_1$ is the {\color{red}source} of the dependence; $S_2$ is the {\color{red}sink} of the
+dependence.
+The dependence flows between instances of statements in the
+same iteration ({\color{red}loop-independent} dependence).
+The number of iterations between source and sink (dependence
+distance) is 0. The {\color{red}dependence direction} is {\color{red}=}.
+$S_1 \delta^{+}_{=} S_2$ or $S_1 \delta^{+}_{0} S_2$
+
+\subsubsection{$<$}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p200.png}
+	\caption{}
+	\label{fig:p200}
+\end{figure}
+
+In Figure \ref{fig:p200},there is an instance of $S_1$ that precedes an instance of $S_2$ in
+execution and $S_1$ produces data that $S_2$ consumes.
+$S_1$ is the source of the dependence; $S_2$ is the sink of the
+dependence.
+The dependence flows between instances of statements in
+different iterations (loop-carried dependence).
+The dependence distance is 1. The direction is positive (<).
+$S_1 \delta^{+}_{<} S_2$ or $S_1 \delta^{+}_{1} S_2$
+
+
+\subsubsection{$>$}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p201.png}
+	\caption{}
+	\label{fig:p201}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p202.png}
+	\caption{}
+	\label{fig:p202}
+\end{figure}
+
+
+An instance of S precedes
+another instance of S and
+S produces data that S
+consumes. S is both source and sink. The dependence is loop-
+carried.
+The dependence distance
+is (1,-1). $S_1 \delta^{+}_{(1,-1)} S_2$
 
 
 \subsection{LOOP TRANSFORMATIONS USING DIRECTION VECTORS}
 
+\subsubsection{Loop Parallelization}
 
+The iterations of a loop may be executed
+in parallel with one another if and only if
+no dependences are carried by the loop!
+
+When that loop does not have a loop-carried dependence, it 
+is safe to run a loop in parallel, which means
+ outermost loop with a direction other than “=“
+
+ \begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p203.png}
+	\caption{Iterations of loop j must be executed sequentially, but the
+    iterations of loop i may be executed in parallel. Outer loop parallelism.}
+	\label{fig:p203}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.3\textwidth]{p204.png}
+	\caption{Iterations of loop i must be executed sequentially, but the
+    iterations of loop j may be executed in parallel. Inner loop parallelism.}
+	\label{fig:p204}
+\end{figure}
+
+\subsubsection{Loop Interchange}
+
+When all dependences remain lexicographically positive,
+it is legal to interchange or block/tile loops, which means
+outermost direction other than “=“ must be “<” (positive)
 
 
 
