@@ -51,7 +51,7 @@ A relation \(R\) on a set \(S\) is called a \textbf{partial order} if it is
 \begin{itemize}
     \item \textbf{Transitivity} if \(x \preceq y\) and  \(y \preceq z\) then  \(x \preceq z\)
     \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = x\)
-    \item \textbf{Reflexivity}  \(x = x\)
+    \item \textbf{Reflexivity}  \(x \preceq x\)
 \end{itemize}    
 
 \subsection{Lattice}
@@ -103,7 +103,7 @@ nonempty finite subset.
 Meet operator must hold the following properties:
 
 \begin{itemize}
-\item \textbf{commutative}: \(x \wedge y = y = \wedge x\). No ordering in the incoming edges.
+\item \textbf{commutative}: \(x \wedge y = y  \wedge x\). No ordering in the incoming edges.
 
 \item \textbf{idempotent}: \(x \wedge x =  x\)
 
@@ -129,7 +129,7 @@ Partial  ordering will also lead to some other properties
     \begin{itemize}
         \item \textbf{Transitivity} if \(x \preceq y\) and  \(y \preceq z\) then  \(x \preceq z\)
         \item \textbf{Antisymmetriy} if \(x \preceq y\) and  \(y \preceq x\) then  \(x = z\)
-        \item \textbf{Reflexivity}  \(x = x\)
+        \item \textbf{Reflexivity}  \(x \preceq x\)
 \end{itemize}
 
 
@@ -215,6 +215,14 @@ Note that monotone framework does not mean \(f(x) \preceq  x\).
 
 
 \subsection{Distributivity}
+
+A framework \((F,V,\wedge)\) is distributive if and only if it
+
+\[
+f(x \wedge y) = f(x) \wedge f(y)
+\]
+
+
 
 Reaching definitions is distributive but constant propogation is not.
 
