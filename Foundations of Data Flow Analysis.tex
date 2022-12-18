@@ -252,14 +252,14 @@ because not all paths in the CFG are executable. For example, a program may incl
 (e.g., a programmer may include a test as a debugging device -- if the program is correct, then the test will always fail,
 but if the program contains an error then the test might succeed, reporting that error). Another way that non-executable paths
 can arise is when two predicates on the path are not independent (e.g., whenever the first evaluates to true then so does the second).
-These situations are illustrated below.
+These situations are illustrated in Figure \ref{fig:p209}.
 
 
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.8\textwidth]{p209.png}
-	\caption{}
+	\caption{Examples to illustrate MOP is overly conservative.}
 	\label{fig:p209}
 \end{figure}
 
@@ -312,39 +312,45 @@ that holds before n executes.
 One question is whether, in general, our system of equations will have a
 unique solution. The answer is that, in the presence of loops, there may
 be multiple solutions. For example, consider the simple program whose CFG
-is given below:
-
-
-
+is given in Figure \ref{fig:p215}:
 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.4\textwidth]{p211.png}
-	\caption{An example}
-	\label{fig:p211}
+	\includegraphics[width=0.4\textwidth]{p215.png}
+	\caption{An example to illustrate the system of equations.}
+	\label{fig:p215}
 \end{figure}
 
-The equations for constant propagation are as follows:
+The equations for constant propagation are as follows:\\
+\texttt{enter.after} $= \Phi $ \\
+\texttt{1.before} $=$  \texttt{enter.after} \\
+\texttt{1.after} $=$ \texttt{1.before} $-(x, *)$ {\color{red} union} $(x, 2)$  \\
+\texttt{2.before} $=$ \texttt{1.after} \\
+\texttt{2.after} $=$ if $(x, c)$ is in  \texttt{2.before} then  \texttt{2.before} $-(y, *)$ {\color{red} union} $(y, c)$, else  \texttt{2.before} $-(y, *)$  \\
+\texttt{3.before} $= \wedge $ ( \texttt{2.after, 4.after} ) \\
+\texttt{3.after} $=$  \texttt{3.before} \\
+\texttt{4.before} $=$  \texttt{3.after} \\
+\texttt{4.after} $=$  \texttt{4.before} \\
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.4\textwidth]{p212.png}
-	\caption{}
-	\label{fig:p212}
-\end{figure}
-
-
-Because of the cycle in the example CFG, the equations for 3.before,
-3.after, 4.before, and 4.after are mutually recursive, which leads to the
+Because of the cycle in the example CFG, the equations for  \texttt{3.before,
+3.after, 4.before, and 4.after} are mutually recursive, which leads to the
 four solutions shown below (differing on those four values).
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.4\textwidth]{p213.png}
-	\caption{}
-	\label{fig:p213}
-\end{figure}
+$$
+	\begin{array}{||c||c||c||c|c||}
+		\hline \text { Variable }        & \text { Solution 1 } & \text { Solution 2 } & \text { Solution 3 } & \text { Solution 4 } \\
+		\hline \hline \text { 1.before } & \{\}                 & \{\}                 & \{\}                 & \{\}                 \\
+		\hline \hline \text { 1.after }  & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
+		\hline \hline \text { 2.before } & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
+		\hline \hline \text { 2.after }  & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     \\
+		\hline \hline \text { 3.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline \hline \text { 3.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline \hline \text { 4.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline \hline \text { 4.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline
+	\end{array}
+$$
 
 The solution we want is solution 4, which includes the most constant
 information. In general, for a "must" problem the desired solution will be
@@ -356,27 +362,40 @@ while for a "may" problem the desired solution will be the smallest one.
 
 Many different algorithms have been designed for solving a dataflow
 problem's system of equations. Most can be classified as either
-iterative algorithms or elimination algorithms. These two classes
-of algorithms are discussed in the next two sections.
+iterative algorithms or elimination algorithms.
 
 
 Most of the iterative algorithms are variations on the following
-algorithm (this version is for forward problems). It uses a new
-value T (called "top"). T has the property that, for all dataflow
-facts d, T $\wedge$ d = d. Also, for all dataflow functions, fn(T) = T.
+algorithm (this version is for forward problems shown in Algorithm \ref{alg:Iterative Algorithms}). It uses a new
+value $T$ (called "top"). $T$ has the property that, for all dataflow
+facts $d$, $T \wedge d = d$. Also, for all dataflow functions, $f_n(T) = T$.
 (When we consider the lattice model for dataflow analysis we
 will see that this initial value is the top element of the lattice.)
 
 
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.4\textwidth]{p210.png}
-	\caption{Iterative Algorithms}
-	\label{fig:p210}
-\end{figure}
 
 
+
+\begin{algorithm}
+	\caption{Iterative Algorithms}\label{alg:Iterative Algorithms}
+	\begin{algorithmic}
+		\State{Step 1 (initialize n.afters):}
+		\State{Set enter.after = init. Set all other n.after to $T$.}
+		\State{Step 2 (initialize worklist):}
+		\State{Initialize a worklist to contain all CFG nodes except enter and exit.}
+		\State{Step 3 (iterate):}
+		\While{the worklist is not empty:}
+		\State{Remove a node n from the worklist.}
+		\State{Compute n.before by combining all p.after such that p is a predecessor of n in the CFG.}
+		\State{Compute tmp = $f_n$( n.before )}
+		\If{tmp != n.after}
+		\State{Set n.after = tmp}
+		\State{Put all of n's successors on the worklist}
+		\EndIf
+		\EndWhile
+	\end{algorithmic}
+\end{algorithm}
 
 
 \subsection{Kildall's Lattice Framework for Dataflow Analysis}
@@ -384,7 +403,7 @@ will see that this initial value is the top element of the lattice.)
 
 Recall that our informal definition of a dataflow problem included:
 \begin{itemize}
-	\item a domain D of "dataflow facts",
+	\item a domain $D$ of "dataflow facts",
 	\item a dataflow fact "init" (the information true at the start
 	      of the program),
 	\item an operator $\wedge$ (used to combine incoming information from multiple predecessors),
@@ -394,8 +413,8 @@ Recall that our informal definition of a dataflow problem included:
 \end{itemize}
 
 and that our goal is to solve a given instance of the problem by computing
-"before" and "after" sets for each node of the control-flow graph.
-A problem is that, with no additional information about the domain D,
+{\color{red} before} and {\color{red} after} sets for each node of the control-flow graph.
+A problem is that, with no additional information about the domain $D$,
 the operator $\wedge$ , and the dataflow functions $f_n$, we can't say,
 in general, whether a particular algorithm for computing the before
 and after sets works correctly (e.g., does the algorithm always halt?
@@ -404,11 +423,11 @@ relate to the MOP solution?).
 
 
 Kildall addressed this issue by putting some additional requirements
-on D, $\wedge$ , and $f_n$. In particular he required that:
+on $D$, $\wedge$ , and $f_n$. In particular he required that:
 
 
 \begin{itemize}
-	\item  D be a complete lattice L such that for any instance of the dataflow problem, L has no infinite descending chains.
+	\item  $D$ be a complete lattice $L$ such that for any instance of the dataflow problem, $L$ has no infinite descending chains.
 	\item  $\wedge$ be the lattice's meet operator.
 	\item  All $f_n$ be distributive.
 \end{itemize}
@@ -420,166 +439,62 @@ Given these properties, Kildall showed that:
 	\item The computed solution is the MOP solution.
 
 \end{itemize}
+
 It is interesting to note that, while his theorems are correct,
 the example dataflow problem that he uses (constant propagation)
 does not satisfy his requirements; in particular, the dataflow functions for
 constant propagation are not distributive (though they are monotonic).
 This means that the solution computed by the iterative algorithm for constant
-propagation will not, in general be the MOP solution. Below is an example to
-illustrate this:
+propagation will not, in general be the MOP solution. An example to
+illustrate this is shown in Figure \ref{fig:p216}
 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.4\textwidth]{p214.png}
-	\caption{}
-	\label{fig:p214}
+	\includegraphics[width=0.8\textwidth]{p216.png}
+	\caption{An example to illustrate that the
+	solution computed by the iterative algorithm for constant propagation not equal to MOP.}
+	\label{fig:p216}
 \end{figure}
 
 
-The MOP solution for the final print statement includes the pair (x,5),
-since x is assigned the value 5 on both paths to that statement. However,
+The MOP solution for the final \texttt{print} statement includes the pair $(x,5)$,
+since $x$ is assigned the value $5$ on both paths to that statement. However,
 the greatest solution to the set of equations for this program (the result
-computed using the iterative algorithm) finds that x is not constant at the
-print statement. This is because the equations require that n.before be the
-meet of m.after for all predecessors m; in particular, they require that
-the "before" set for node 7 (x = a + b) has empty, since the "after" sets
-of the two predecessors have (a,2), (b,3), and (a,3), (b,2), respectively,
+computed using the iterative algorithm) finds that $x$ is not constant at the
+print statement. This is because the equations require that \texttt{n.before} be the
+meet of \texttt{m.after} for all predecessors \texttt{m}; in particular, they require that
+the {\color{red} before} set for  \texttt{node 7 (x = a + b)}
+ has empty, since the {\color{red} after} sets
+of the two predecessors have $(a,2), (b,3)$, and $(a,3), (b,2)$, respectively,
 and the intersection of those two sets is empty. Given that value for
-7.before, the equations require that 7.after (and 8.before) say that
-x is not constant. We can only discover that x is constant after node 7
-if both a and b are constant before node 7.
+\texttt{7.before}, the equations require that \texttt{7.after} (and \texttt{8.before}) say that
+$x$ is not constant. We can only discover that $x$ is constant after \texttt{node 7}
+if both $a$ and $b$ are constant before \texttt{node 7}.
 
 
 
 
-In 1977, a paper by Kam and Ullman (Acta Informatica 7, 1977) 
+In 1977, a paper by Kam and Ullman\cite{kam1977monotone}
 extended Kildall's results to show that, given monotonic dataflow functions:
 
 \begin{itemize}
-    \item The solutions to the set of equations form a lattice.
-    \item The solution computed by the iterative algorithm is the greatest solution (using the lattice ordering).
-    \item If the functions are monotonic but not distributive, then the solution computed by the iterative algorithm may be less than the MOP solution (using the lattice ordering).
-\end{itemize}  
+	\item The solutions to the set of equations form a lattice.
+	\item The solution computed by the iterative algorithm is the greatest solution (using the lattice ordering).
+	\item If the functions are monotonic but not distributive, then the solution computed by the iterative algorithm may be less than the MOP solution (using the lattice ordering).
+\end{itemize}
 
 
 
 \subsection{Summary}
 Let's answer the questions we asked before.
 \begin{itemize}
-    \item If Semi-lattice has finite descending chain, transfer function is monotone,
-    then the iterative algorithm will converge.
-    \item  If dataflow framework is monotone,  then if the algorithm converges,
-    $IN[B] \preceq  MOP[B] $
-    \item If dataflow framework is distributive, then if the algorithm converges, 
-    $IN[b] = MOP[b]$
-\end{itemize}  
-% \[
-% f_1(x) = G_1 \cup (x - K_1)   
-% f_2(x) = G_2 \cup (x - K_2)
-% f_2(f_1(x)) = G_2 \cup [(G_1 \cup (x - K_1)) - K_2] = [G_2 \cup (G_1 - K_2)] \cup [X-(K_1 \cuo K_2)]
-
-% \]
-
-
-
-
-% The \(\preceq \) not means less or equal to or subset, but it really means lattice inclusion.
-% So if \(x \preceq y\), this means x is more conservative or constrained. In another word, x is lattice included in y.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-% Having shown several useful examples of the data-flow abstraction, 
-% we now study the family of data-flow schemas as a whole, abstractly. 
-% We shall answer several basic questions about data-flow algorithms formally:
-
-% \begin{itemize}
-
-% \item Under what circumstances is the iterative algorithm used in data-flow analysis correct?
-% \item How precise is the solution obtained by the iterative algorithm?
-% \item Will the iterative algorithm converge?
-% \item How fast is the convergence?
-% \end{itemize}
-
-
-% \subsection{Partial Order}\footnote{Based on \url{https://pages.cs.wisc.edu/~horwitz/CS704-NOTES/2.DATAFLOW.html}}
-
-% A binary relation R on a set S is called a partial ordering(poset), or partial order if and only if it is:
-
-% \begin{itemize}
-% \item \textbf{Reflexive} \(x \preceq x\)
-% \item \textbf{Antisymmetric} if \(x \preceq y\) and \(y \preceq x\) then \(x = y\)
-% \item \textbf{Transitive} if \(x \preceq y\) and \(y \preceq z\) then \(x \preceq z\)
-% \end{itemize} 
-
-
-
-% \subsection{Lattices}
-
-% A lattice is a poset in which every pair of elements has:
-
-% \begin{itemize}
-% \item a Least Upper Bound (the join of the two elements), and
-% \item a Greatest Lower Bound (the meet of the two elements).
-% \end{itemize}    
-
-
-
-% \subsection{Complete lattices}
-
-
-% A complete lattice is a lattice in which all subsets have a greatest lower bound 
-% and a least upper bound (the bounds must be in the lattice, but not necessarily 
-% in the subsets themselves). Note that Every finite lattice (i.e., S is finite) is complete.
-
-
-% \subsection{Monotonic and distributive functions}
-
-% A function f: L → L (where L is a lattice) is monotonic iff for all x,y in L: x ⊆ y implies f(x) ⊆ f(y).
-
-% A function f: L → L (where L is a lattice) is distributive iff for all x,y in L: f(x meet y) = f(x) meet f(y).
-
-% Every distributive function is also monotonic (proving that could be good practice!) but not vice versa. For the GEN/KILL dataflow problems, all dataflow functions are distributive. For constant propagation, all functions are monotonic, but not all functions are distributive.
-
-
-% \subsection{Fixed points}
-
-% x is a fixed point of function f iff f(x) = x.
-
-% \subsection{Meet Operator}
+	\item If D is a semi-lattice L which has finite descending chain, transfer function is monotone,
+	      then the iterative algorithm will converge.
+	\item  If dataflow framework is monotone,  then if the algorithm converges,
+	      $IN[B] \preceq  MOP[B] $
+	\item If dataflow framework is distributive, then if the algorithm converges,
+	      $IN[B] = MOP[B]$
+\end{itemize}
 
 
