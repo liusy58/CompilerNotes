@@ -101,41 +101,41 @@ execution.
 
 
 \begin{center}
-    \begin{tabular}{|c|c|}
-   \hline Direction & Backward\\
-   \hline Domain & Sets	of	variables \\
-   \hline Meet operator & \( \cup \)\\
-   \hline Top(T) & $\phi$\\
-   \hline Bottom & Universal Set\\
-   \hline Boundary condition & $\mathrm{IN[EXIT]} = \phi$\\  
-   \hline Initialization for internal nodes & $\mathrm{IN[B]} = \phi$\\
-   \hline Finited escending chain? &\checkmark  \\
-   \hline Transfer function  &  $f_b(x) = \mathrm{USE}_b \cup (x - \mathrm{DEF}_b)$\\
-   \hline Monotone\&Distributive?  & \checkmark \\
-   \hline
-   \end{tabular}  
-   \end{center}
+	\begin{tabular}{|c|c|}
+		\hline Direction                         & Backward                                            \\
+		\hline Domain                            & Sets	of	variables                                     \\
+		\hline Meet operator                     & \( \cup \)                                          \\
+		\hline Top(T)                            & $\phi$                                              \\
+		\hline Bottom                            & Universal Set                                       \\
+		\hline Boundary condition                & $\mathrm{IN[EXIT]} = \phi$                          \\
+		\hline Initialization for internal nodes & $\mathrm{IN[B]} = \phi$                             \\
+		\hline Finited escending chain?          & \checkmark                                          \\
+		\hline Transfer function                 & $f_b(x) = \mathrm{USE}_b \cup (x - \mathrm{DEF}_b)$ \\
+		\hline Monotone\&Distributive?           & \checkmark                                          \\
+		\hline
+	\end{tabular}
+\end{center}
 
 
 
 
-\subsection{Strongly Live Variables Analysis}
+\subsection{Strongly Live Variables Analysis\cite{LiveVari29:online}}
 
 A variable is strongly live if
 \begin{itemize}
 
-\item it is used in a statement other than assignment statement, or
-(same as simple liveness)
-\item it is used in an assignment statement defining a variable that is
-strongly live 
+	\item it is used in a statement other than assignment statement, or
+	      (same as simple liveness)
+	\item it is used in an assignment statement defining a variable that is
+	      strongly live
 \end{itemize}
 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{p217.png}
-    \caption{Understanding Strong Liveness}
-    \label{fig:p217}
+	\centering
+	\includegraphics[width=0.7\textwidth]{p217.png}
+	\caption{Understanding Strong Liveness}
+	\label{fig:p217}
 \end{figure}
 
 
@@ -151,7 +151,7 @@ below:
 
 
 $$
-f_n(X)= \begin{cases}(X-\{y\}) \cup(Opd(e) \cap \mathbb{V}ar) & n \text { is } y=e, e \in \mathbb{E}pr, y \in X \\ X-\{y\} & n \text { is input }(y) \\ X \cup\{y\} & n \text { is use }(y) \\ X & \text { otherwise }\end{cases}
+	f_n(X)= \begin{cases}(X-\{y\}) \cup(Opd(e) \cap \mathbb{V}ar) & n \text { is } y=e, e \in \mathbb{E}pr, y \in X \\ X-\{y\} & n \text { is input }(y) \\ X \cup\{y\} & n \text { is use }(y) \\ X & \text { otherwise }\end{cases}
 $$
 
 
@@ -160,8 +160,8 @@ assignment is skipped using
 the “otherwise” clause
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p218.png}
-    \caption{Simple Liveness VS. Strong Liveness.}
-    \label{fig:p218}
+	\centering
+	\includegraphics[width=0.4\textwidth]{p218.png}
+	\caption{Simple Liveness VS. Strong Liveness.}
+	\label{fig:p218}
 \end{figure}
