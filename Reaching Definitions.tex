@@ -4,7 +4,7 @@
 
 The Reaching Definitions Problem is a data-flow problem used to answer the
 following questions: Which definitions of a variable \textit{X} reach a given use of \textit{X} in
-an expression? Is \textit{X} used anywhere before it is defined? A definition\textit{d} reaches a point \textit{p} if there exists path 
+an expression? Is \textit{X} used anywhere before it is defined? A definition\textit{d} reaches a point \textit{p} if there exists path
 from the point immediately following \textit{d} to \textit{p} such that \textit{d} is not killed(overwritten) along that path.
 
 
@@ -16,58 +16,58 @@ Here is the iterative  algorithm.
 
 
 \begin{algorithm}
-    \caption{Reaching Defintions:Iterative Algorithm}\label{alg:reachingdefiterative}
-    \hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
-   
-    
-    \begin{algorithmic}
-   
-    \State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
+	\caption{Reaching Defintions:Iterative Algorithm}\label{alg:reachingdefiterative}
+	\hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
 
-    \For{\texttt{each basic block B other than Entry}}
-        \State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
-    \EndFor
-    \While{Changes to any out[] occur}
-        \For{\texttt{each basic block B other than Entry}}
-        \State \texttt{$in[B] =  \cup (out[p])$, for all predecessors p of B}
-        \State \texttt{$out[B] = f_B(in[B])$} \algorithmiccomment{$out[B]=gen[B]\cup (in[B]-kill[B]) $ }
-        \EndFor
 
-    \EndWhile
-    \end{algorithmic}
+	\begin{algorithmic}
+
+		\State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
+
+		\For{\texttt{each basic block B other than Entry}}
+		\State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
+		\EndFor
+		\While{Changes to any out[] occur}
+		\For{\texttt{each basic block B other than Entry}}
+		\State \texttt{$in[B] =  \cup (out[p])$, for all predecessors p of B}
+		\State \texttt{$out[B] = f_B(in[B])$} \algorithmiccomment{$out[B]=gen[B]\cup (in[B]-kill[B]) $ }
+		\EndFor
+
+		\EndWhile
+	\end{algorithmic}
 \end{algorithm}
 
 
 
 
-\subsection{ Worklist   Algorithm}
+\subsection{Worklist   Algorithm}
 
 \begin{algorithm}
-    \caption{Reaching Defintions:Worklist Algorithm}\label{alg:reachingdefiterative}
-    \hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
-   
-    
-    \begin{algorithmic}
-   
-    \State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
-    \State \textcolor{blue}{ChangedNodes = N}   
-    \For{\texttt{each basic block B other than Entry}}
-        \State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
-    \EndFor
-    \While{ChangedNodes $\neq \emptyset$}
-        \State \textcolor{blue}{Remove i from ChangedNodes}
-        \State $in[B] =  \cup (out[p])$, for all predecessors p of B
-        \State \textcolor{blue}{$oldout = out[i]$}
-        \State $out[i] = f_i(in[i])$ \algorithmiccomment{$out[i]=gen[i]\cup (in[i]-kill[i]) $ }
-        \If {\textcolor{blue}{oldout} $\neq out[i]$}
+	\caption{Reaching Defintions:Worklist Algorithm}\label{alg:reachingdefiterative}
+	\hspace*{\algorithmicindent} \textbf{Input: control flow graph CFG = (N, E, Entry, Exit) } \\
 
-            \For{\texttt{all \textcolor{blue}{successors s of i}}}
-                \State \textcolor{blue}{add s to ChangedNodes}
-            \EndFor
-        \EndIf
 
-    \EndWhile
-    \end{algorithmic}
+	\begin{algorithmic}
+
+		\State out[Entry] = $\emptyset$ \algorithmiccomment{Boundary condition}
+		\State \textcolor{blue}{ChangedNodes = N}
+		\For{\texttt{each basic block B other than Entry}}
+		\State \texttt{out[B] = $\emptyset$} \algorithmiccomment{Initialization for iterative algorithm }
+		\EndFor
+		\While{ChangedNodes $\neq \emptyset$}
+		\State \textcolor{blue}{Remove i from ChangedNodes}
+		\State $in[B] =  \cup (out[p])$, for all predecessors p of B
+		\State \textcolor{blue}{$oldout = out[i]$}
+		\State $out[i] = f_i(in[i])$ \algorithmiccomment{$out[i]=gen[i]\cup (in[i]-kill[i]) $ }
+		\If {\textcolor{blue}{oldout} $\neq out[i]$}
+
+		\For{\texttt{all \textcolor{blue}{successors s of i}}}
+		\State \textcolor{blue}{add s to ChangedNodes}
+		\EndFor
+		\EndIf
+
+		\EndWhile
+	\end{algorithmic}
 \end{algorithm}
 
 
@@ -76,16 +76,35 @@ Here is the iterative  algorithm.
 Here comes an example of reaching definition.
 
 \begin{figure}[!htb]
-    \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{rdex1.jpg}
-      \caption{Pass 1}\label{fig:awesome_image1}
-    \endminipage\hfill
-    \minipage{0.32\textwidth}
-      \includegraphics[width=\linewidth]{rdex2.jpg}
-      \caption{Pass 2}\label{fig:awesome_image2}
-    \endminipage\hfill
-    \minipage{0.32\textwidth}%
-      \includegraphics[width=\linewidth]{rdex3.jpg}
-      \caption{Pass 3}\label{fig:awesome_image3}
-    \endminipage
+	\minipage{0.32\textwidth}
+	\includegraphics[width=\linewidth]{rdex1.jpg}
+	\caption{Pass 1}\label{fig:awesome_image1}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}
+	\includegraphics[width=\linewidth]{rdex2.jpg}
+	\caption{Pass 2}\label{fig:awesome_image2}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}%
+	\includegraphics[width=\linewidth]{rdex3.jpg}
+	\caption{Pass 3}\label{fig:awesome_image3}
+	\endminipage
 \end{figure}
+
+
+\subsection{Summary}
+
+\begin{center}
+	\begin{tabular}{|c|c|}
+		\hline Direction                         & Forward	\\
+		\hline Domain                            & Sets	of	definitions                                    \\
+		\hline Meet operator                     & \( \cup \)                                          \\
+		\hline Top(T)                            & $\phi$                                              \\
+		\hline Bottom                            & Universal Set                                       \\
+		\hline Boundary condition                & $\mathrm{OUT[ENTRY]} = \phi$                          \\
+		\hline Initialization for internal nodes & $\mathrm{OUT[B]} = \phi$                             \\
+		\hline Finited escending chain?          & \checkmark                                          \\
+		\hline Transfer function                 & $f_b(x) = \mathrm{Gen}_b \cup (x - \mathrm{Kill}_b)$ \\
+		\hline Monotone\&Distributive?           & \checkmark                                          \\
+		\hline
+	\end{tabular}
+\end{center}
