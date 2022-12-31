@@ -19,14 +19,14 @@ Many dataflow analyses need to find the use-sites of each defined variable or th
 
 
 \begin{definition}{Use-Definition (UD) Chains}
-For a given definition of a variable X, what are all of its uses?
+	For a given definition of a variable X, what are all of its uses?
 
 \end{definition}
 
 
 
 \begin{definition}{Definition-Use (DU) Chains}
-For a given use of a variable X, what are all of the reaching definitions of X?
+	For a given use of a variable X, what are all of the reaching definitions of X?
 
 \end{definition}
 
@@ -36,17 +36,17 @@ Unfortunately, it is expensive to use UD and DU chains, because if we have N def
 
 
 \begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.3\textwidth]{p38.png}
-    \caption{If a variable has N uses and M definitions (which occupy about N + M instructions in a program), it takes space (and time) proportional to N · M to represent def-use chains – a quadratic blowup.}
-    \label{fig:p38}
+	\centering
+	\includegraphics[width=0.3\textwidth]{p38.png}
+	\caption{If a variable has N uses and M definitions (which occupy about N + M instructions in a program), it takes space (and time) proportional to N · M to represent def-use chains – a quadratic blowup.}
+	\label{fig:p38}
 \end{figure}
 
 
 \subsection{Static Single Assignment(SSA)}
 
 \begin{definition}{Static Single Assignment }
-    Static Single Assignment is an IR where every variable is assigned a value at most once in the program text.
+	Static Single Assignment is an IR where every variable is assigned a value at most once in the program text.
 \end{definition}
 
 
@@ -58,12 +58,12 @@ Unfortunately, it is expensive to use UD and DU chains, because if we have N def
 
 \begin{definition}{the $\Phi$ function}
 
-     $\Phi$ merges multiple definitions along multiple control paths into a single definition.
+	$\Phi$ merges multiple definitions along multiple control paths into a single definition.
 
-     At a basic block with p predecessors, there are p arguments to the $\Phi$ functions.
+	At a basic block with p predecessors, there are p arguments to the $\Phi$ functions.
 
-     $$ x_{\text {new }} \leftarrow \Phi\left(\mathbf{x}_1, \mathbf{x}_1, \mathbf{x}_1, \ldots, \mathbf{x}_{\mathrm{p}}\right)
-     $$
+	$$ x_{\text {new }} \leftarrow \Phi\left(\mathbf{x}_1, \mathbf{x}_1, \mathbf{x}_1, \ldots, \mathbf{x}_{\mathrm{p}}\right)
+	$$
 \end{definition}
 
 \subsubsection{Why SSA is useful?}
@@ -92,21 +92,21 @@ In straight-line code, such as within a basic block, it is easy to see that each
 
 
 \begin{figure}[htb]
-     \centering
-     \begin{subfigure}{0.2\textwidth}
-     \centering
-         \includegraphics[width=\textwidth]{p42.png}
-         \caption{A straight-line program.}
-         \label{fig:p42}
-     \end{subfigure}
-     \begin{subfigure}{0.25\textwidth}
-     \centering
-         \includegraphics[width=\textwidth]{p43.png}
-         \caption{The program in single-assignment form.}
-         \label{fig:p43}
-     \end{subfigure}
-        \caption{SSA for straight-line code}
-        \label{fig:p42-43}
+	\centering
+	\begin{subfigure}{0.2\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{p42.png}
+		\caption{A straight-line program.}
+		\label{fig:p42}
+	\end{subfigure}
+	\begin{subfigure}{0.25\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{p43.png}
+		\caption{The program in single-assignment form.}
+		\label{fig:p43}
+	\end{subfigure}
+	\caption{SSA for straight-line code}
+	\label{fig:p42-43}
 \end{figure}
 
 
@@ -114,10 +114,10 @@ But when two control-flow paths merge together, it is not obvious how to have on
 
 
 \begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{p44.png}
-    \caption{(a) A program with a control-flow join; (b) the program transformed to single-assignment form; (c) edge-split SSA form.}
-    \label{fig:p44}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p44.png}
+	\caption{(a) A program with a control-flow join; (b) the program transformed to single-assignment form; (c) edge-split SSA form.}
+	\label{fig:p44}
 \end{figure}
 
 
@@ -130,21 +130,21 @@ unlike ordinary mathematical functions, $\Phi$(a1, a2) yields a1 if control reac
 If we must execute the program, or translate it to executable form, we can “implement” the $\Phi$-function using a move instruction on each incoming edge as shown in Figure \ref{fig:p39-40}. However, in many cases, we simply need the connection of uses to definitions and don’t need to “execute” the $\Phi$-functions during optimization. In these cases, we can ignore the question of which value to produce.
 
 \begin{figure}[htb]
-     \centering
-     \begin{subfigure}{0.3\textwidth}
-     \centering
-         \includegraphics[width=\textwidth]{p39.png}
-         \caption{Original code}
-         \label{fig:p39}
-     \end{subfigure}
-     \begin{subfigure}{0.3\textwidth}
-     \centering
-         \includegraphics[width=\textwidth]{p40.png}
-         \caption{Code after moving instruction.}
-         \label{fig:p40}
-     \end{subfigure}
-        \caption{Implementing $\Phi$-function}
-        \label{fig:p39-40}
+	\centering
+	\begin{subfigure}{0.3\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{p39.png}
+		\caption{Original code}
+		\label{fig:p39}
+	\end{subfigure}
+	\begin{subfigure}{0.3\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{p40.png}
+		\caption{Code after moving instruction.}
+		\label{fig:p40}
+	\end{subfigure}
+	\caption{Implementing $\Phi$-function}
+	\label{fig:p39-40}
 \end{figure}
 
 
@@ -155,8 +155,8 @@ If we must execute the program, or translate it to executable form, we can “im
 The algorithm for converting a program to SSA form is roughly as follows:
 
 \begin{itemize}
-    \item 1. adds $\Phi$ functions for the variables, and then
-    \item 2. renames all the definitions and uses of variables using subscripts.
+	\item 1. adds $\Phi$ functions for the variables, and then
+	\item 2. renames all the definitions and uses of variables using subscripts.
 \end{itemize}
 
 
@@ -167,18 +167,18 @@ The algorithm for converting a program to SSA form is roughly as follows:
 Trivial SSA form is based on a simple observation: $\Phi$ functions are only needed for variables that are "live" after the $\Phi$ function.
 
 \begin{itemize}
-    \item Each assignment generates a fresh variable.
-    \item At each join point insert $\Phi$ for all live variables.
+	\item Each assignment generates a fresh variable.
+	\item At each join point insert $\Phi$ for all live variables.
 \end{itemize}
 
 
 Trivial SSA will generate some useless $\Phi$ functions. An example is shown in Figure \ref{fig:p41} So a $\Phi$-function is not needed for every variable at each point.
 
 \begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.5\textwidth]{p41.png}
-    \caption{$x2 \leftarrow \Phi(x1,x1)$ is useless because x2 is equal to x1.}
-    \label{fig:p41}
+	\centering
+	\includegraphics[width=0.5\textwidth]{p41.png}
+	\caption{$x2 \leftarrow \Phi(x1,x1)$ is useless because x2 is equal to x1.}
+	\label{fig:p41}
 
 \end{figure}
 
@@ -188,8 +188,8 @@ Trivial SSA will generate some useless $\Phi$ functions. An example is shown in 
 Minimal SSA is an updated version compared to trivial SSA.
 
 \begin{itemize}
-    \item Each assignment generates a fresh variable.
-    \item At each join point insert $\Phi$ for all live variables with multiple outstanding defs. 
+	\item Each assignment generates a fresh variable.
+	\item At each join point insert $\Phi$ for all live variables with multiple outstanding defs.
 \end{itemize}
 
 \subsubsection{Path-convergence criterion}
@@ -198,29 +198,29 @@ There should be a $\Phi$-function for variable a at node z of the flow graph
 exactly when all of the following are true:
 
 \begin{itemize}
-    \item 1. There is a block x containing a definition of a,
-    \item 2. There is a block y (with $y \neq x$) containing a definition of a,
-    \item 3. There is a nonempty path $P_{xz}$ of edges from x to z,
-    \item 4. There is a nonempty path $P_{yz}$ of edges from y to z,
-    \item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z, and
-    \item 6. The node z does not appear within both $P_{xz}$ and $P_{yz}$ prior to the
-end, though it may appear in one or the other.
+	\item 1. There is a block x containing a definition of a,
+	\item 2. There is a block y (with $y \neq x$) containing a definition of a,
+	\item 3. There is a nonempty path $P_{xz}$ of edges from x to z,
+	\item 4. There is a nonempty path $P_{yz}$ of edges from y to z,
+	\item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z, and
+	\item 6. The node z does not appear within both $P_{xz}$ and $P_{yz}$ prior to the
+	      end, though it may appear in one or the other.
 \end{itemize}
 
 
-We consider the start node to contain an implicit definition of every variable, either because the variable may be a formal parameter or to represent the notion of a 
+We consider the start node to contain an implicit definition of every variable, either because the variable may be a formal parameter or to represent the notion of a
 $\leftarrow$ uninitialized without special cases. A $\Phi$-function itself counts as a definition of a, so the path-convergence criterion must be considered as a set of equations to be satisfied. As usual, we can solve them by iteration as shown in \ref{alg:Iterated path-convergence criterion}.
 
 
 \begin{algorithm}
-\caption{Iterated path-convergence criterion}\label{alg:Iterated path-convergence criterion}
-\begin{algorithmic}
+	\caption{Iterated path-convergence criterion}\label{alg:Iterated path-convergence criterion}
+	\begin{algorithmic}
 
-\While{there are nodes $x, y, z$ satisfying conditions 1–5
-and \\ $z$ does not contain a $\Phi$-function for a}
-\State  insert a $\leftarrow$ $\Phi$(a, a, . . . , a) at node Z
-\EndWhile
-\end{algorithmic}
+		\While{there are nodes $x, y, z$ satisfying conditions 1–5
+			and \\ $z$ does not contain a $\Phi$-function for a}
+		\State  insert a $\leftarrow$ $\Phi$(a, a, . . . , a) at node Z
+		\EndWhile
+	\end{algorithmic}
 \end{algorithm}
 
 \subsubsection{Dominance property of SSA form}
@@ -229,39 +229,39 @@ The iterated path-convergence algorithm for placing $\Phi$-functions is not prac
 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{p45.png}
-    \caption{ Conversion of a program to static single-assignment form. Node 7 is a postbody node, inserted to make sure there is only one loop edge; such nodes are not strictly necessary but are sometimes helpful.}
-    \label{fig:p45}
+	\centering
+	\includegraphics[width=\textwidth]{p45.png}
+	\caption{ Conversion of a program to static single-assignment form. Node 7 is a postbody node, inserted to make sure there is only one loop edge; such nodes are not strictly necessary but are sometimes helpful.}
+	\label{fig:p45}
 
 \end{figure}
 
 
 \begin{definition}{Strictly dominance}
-    x strictly dominates w (x sdom w) iff impossible to reach w without passing through x first.
+	x strictly dominates w (x sdom w) iff impossible to reach w without passing through x first.
 \end{definition}
 
 \begin{definition}{Dominance}
-    x  dominates w (x dom w) iff x sdom w or x = w.
-$$
-\operatorname{Dom}(n)= \begin{cases}\{n\} & \text { if } n=n_0 \\ \{n\} \cup\left(\bigcap_{p \in \operatorname{preds}(n)} \operatorname{Dom}(p)\right) & \text { if } n \neq n_0\end{cases}
-$$
+	x  dominates w (x dom w) iff x sdom w or x = w.
+	$$
+		\operatorname{Dom}(n)= \begin{cases}\{n\} & \text { if } n=n_0 \\ \{n\} \cup\left(\bigcap_{p \in \operatorname{preds}(n)} \operatorname{Dom}(p)\right) & \text { if } n \neq n_0\end{cases}
+	$$
 \end{definition}
 
 \begin{definition}{Dominance tree}
-    x sdom w iff x is a proper ancestor of w.  
+	x sdom w iff x is a proper ancestor of w.
 
 \end{definition}
 
 \begin{definition}{Dominance Frontier}
 
 
-The dominance frontier of a node x is the set of all nodes w such that
-x dominates a predecessor of w, but does not strictly dominate w.
+	The dominance frontier of a node x is the set of all nodes w such that
+	x dominates a predecessor of w, but does not strictly dominate w.
 
-$$
-F(x)=  \{w | \texttt{x  dom pred(w) AND   !(x  sdom  w) } \}
-$$
+	$$
+		F(x)=  \{w | \texttt{x  dom pred(w) AND   !(x  sdom  w) } \}
+	$$
 \end{definition}
 
 
@@ -270,17 +270,17 @@ $$
 
 An essential property of static single assignment form is that definitions dominate uses; more specifically,
 \begin{itemize}
-    \item  If x is the ith argument of a $\Phi$-function in block n, then the definition of x dominates the ith predecessor of n.
-    \item  If x is used in a non-$\Phi$ statement in block n, then the definition of x dominates n
+	\item  If x is the ith argument of a $\Phi$-function in block n, then the definition of x dominates the ith predecessor of n.
+	\item  If x is used in a non-$\Phi$ statement in block n, then the definition of x dominates n
 \end{itemize}
 
 \begin{note}{Dominance Property of SSA	}
-  In SSA,
+	In SSA,
 
-  \begin{itemize}
-      \item If x i is used in $x \leftarrow \Phi (..., x_i , ...)$, then $BB(x_i )$ dominates ith predecessor of $BB(\Phi)$
-      \item If x is used in $y \leftarrow ...x...$,then BB(x) dominates BB(y)
-  \end{itemize}
+	\begin{itemize}
+		\item If x i is used in $x \leftarrow \Phi (..., x_i , ...)$, then $BB(x_i )$ dominates ith predecessor of $BB(\Phi)$
+		\item If x is used in $y \leftarrow ...x...$,then BB(x) dominates BB(y)
+	\end{itemize}
 \end{note}
 
 
@@ -293,18 +293,18 @@ An essential property of static single assignment form is that definitions domin
 \textbf{ \large \textit{Theorem.}} The iterated dominance frontier criterion and the iterated path convergence criterion specify exactly the same set of nodes at which to put $\Phi$-functions
 
 \begin{figure}[htb]
-    \centering
-    \includegraphics[width=\textwidth]{p46.png}
-    \caption{Node 5 dominates all the nodes in the grey area. (a) Dominance frontier of node 5 includes the nodes (4, 5, 12, 13) that are targets of edges crossing from the region dominated by 5 (grey area including node 5) to the region not strictly dominated by 5 (white area including node 5). (b) Any node in the dominance frontier of n is also a point of convergence of nonintersecting paths, one from n and one from the root node. (c) Another example of converging paths $P_{1,5}$ and $P_{5,5}$.}
-    \label{fig:p46}
+	\centering
+	\includegraphics[width=\textwidth]{p46.png}
+	\caption{Node 5 dominates all the nodes in the grey area. (a) Dominance frontier of node 5 includes the nodes (4, 5, 12, 13) that are targets of edges crossing from the region dominated by 5 (grey area including node 5) to the region not strictly dominated by 5 (white area including node 5). (b) Any node in the dominance frontier of n is also a point of convergence of nonintersecting paths, one from n and one from the root node. (c) Another example of converging paths $P_{1,5}$ and $P_{5,5}$.}
+	\label{fig:p46}
 
 \end{figure}
 
 
 \begin{proof}{Proof}
-The sketch of a proof that shows if w is in the dominance frontier of a definition, then it must be a point of convergence.
+	The sketch of a proof that shows if w is in the dominance frontier of a definition, then it must be a point of convergence.
 
-Suppose there is a definition of variable a at some node n (such as node 5 in Figure  \ref{fig:p46}b), and node w (such as node 12 in Figure  \ref{fig:p46}b) is in the dominance frontier of n. The root node implicitly contains a definition of every variable, including a. There is a path $P_{rw}$ from the root node (node 1 in Figure \ref{fig:p46}) to w that does not go through n or through any node that n dominates; and there is a path $P_{nw}$ from n to w that goes only through dominated nodes. These paths have w as their first point of convergence.
+	Suppose there is a definition of variable a at some node n (such as node 5 in Figure  \ref{fig:p46}b), and node w (such as node 12 in Figure  \ref{fig:p46}b) is in the dominance frontier of n. The root node implicitly contains a definition of every variable, including a. There is a path $P_{rw}$ from the root node (node 1 in Figure \ref{fig:p46}) to w that does not go through n or through any node that n dominates; and there is a path $P_{nw}$ from n to w that goes only through dominated nodes. These paths have w as their first point of convergence.
 \end{proof}
 
 
@@ -313,15 +313,15 @@ Suppose there is a definition of variable a at some node n (such as node 5 in Fi
 To insert all the necessary $\Phi$-functions, for every node n in the flow graph we need DF[n], its dominance frontier. Given the dominator tree, we can efficiently compute the dominance frontiers of all the nodes of the flow graph in one pass. We define two auxiliary sets
 
 \begin{itemize}
-    \item $DF_{local}[n]$ The successors of n that are not strictly dominated by n;
-    \item $DF_{up}[n]$ Nodes in the dominance frontier of n that are not dominated by n’s immediate dominator.
+	\item $DF_{local}[n]$ The successors of n that are not strictly dominated by n;
+	\item $DF_{up}[n]$ Nodes in the dominance frontier of n that are not dominated by n’s immediate dominator.
 \end{itemize}
 
-The dominance frontier of n can be computed from $DF_{local}[n]$  and $DF_{up}[n]$ 
+The dominance frontier of n can be computed from $DF_{local}[n]$  and $DF_{up}[n]$
 
 
 $$
-D F[n]=D F_{\text {local }}[n] \quad \cup \quad \bigcup_{c \in \text { children }[n]} D F_{\text {up }}[c]
+	D F[n]=D F_{\text {local }}[n] \quad \cup \quad \bigcup_{c \in \text { children }[n]} D F_{\text {up }}[c]
 $$
 
 where children[n] are the nodes whose immediate dominator (idom) is n.
@@ -330,25 +330,25 @@ where children[n] are the nodes whose immediate dominator (idom) is n.
 To compute $DF_{local}[n]$ \ref{alg:computeDF} more easily (using immediate dominators instead of dominators), we use the following theorem: $DF_{local}[n]$ = the set of those successors of n whose immediate dominator is not n. The following computeDF function should be called on the root of the dominator tree (the start node of the flow graph). It walks the tree computing DF[n] for every node n: it computes $DF_{local}[n]$ by examining the successors of n, then combines $DF_{local}[n]$ and (for each child c) $DF_{up}[n]$.a
 
 \begin{algorithm}
-\caption{computeDF}\label{alg:computeDF}
-\begin{algorithmic}
+	\caption{computeDF}\label{alg:computeDF}
+	\begin{algorithmic}
 
-\State $S \gets \{\}$
-\For{each node y in succ[n]} \Comment{This loop computes $DF_{local}[n]$}
-\If {idom(y) $\neq$ n}
-\State $S\leftarrow S \cup \{y\}$
-\EndIf 
-\EndFor
+		\State $S \gets \{\}$
+		\For{each node y in succ[n]} \Comment{This loop computes $DF_{local}[n]$}
+		\If {idom(y) $\neq$ n}
+		\State $S\leftarrow S \cup \{y\}$
+		\EndIf
+		\EndFor
 
-\For{each child c of n in the dominator tree} 
-\State computeDF[c]
-\For{each element w of DF[c]} \Comment{This loop computes $DF_{up}[n]$}
-\If {n does not dominate w}
-\State $S\leftarrow S \cup \{w\}$
-\EndIf 
-\EndFor
-\EndFor
-\end{algorithmic}
+		\For{each child c of n in the dominator tree}
+		\State computeDF[c]
+		\For{each element w of DF[c]} \Comment{This loop computes $DF_{up}[n]$}
+		\If {n does not dominate w}
+		\State $S\leftarrow S \cup \{w\}$
+		\EndIf
+		\EndFor
+		\EndFor
+	\end{algorithmic}
 \end{algorithm}
 
 This algorithm is quite efficient. It does work proportional to the size (number of edges) of the original graph, plus the size of the dominance frontiers it computes. Although there are pathological graphs in which most of the nodes have very large dominance frontiers, in most cases the total size of all the DFs is approximately linear in the size of the graph, so this algorithm runs in “practically” linear time.
@@ -361,33 +361,33 @@ This algorithm is quite efficient. It does work proportional to the size (number
 Starting with a program not in SSA form, we need to insert just enough $\Phi$-functions to satisfy the iterated dominance frontier criterion. To avoid re-examining nodes where no $\Phi$-function has been inserted, we use a work-list algorithm.
 
 \begin{algorithm}
-\caption{Place-$\Phi$-Functions}\label{alg:Place-Phi-Functions}
-\begin{algorithmic}
-\For{each node n}
-\For{each variable a in $A_{orig}[n]$}
-\State defsites[a] $\gets$ defsites[a] $\cup \{n\}$
-\EndFor
-\EndFor
+	\caption{Place-$\Phi$-Functions}\label{alg:Place-Phi-Functions}
+	\begin{algorithmic}
+		\For{each node n}
+		\For{each variable a in $A_{orig}[n]$}
+		\State defsites[a] $\gets$ defsites[a] $\cup \{n\}$
+		\EndFor
+		\EndFor
 
 
-\For{each variable a}
-\State W $\gets$ defsites[a]
-\While{ W not empty}
-\State{remove some node n from W}
-\For{each y in DF[n]}
-\If{y $\not\in$ $A_{\Phi}[a]$}
-\State{insert the statement a $\gets$ $\Phi$(a, a, . . . , a) at the top of block y, where the $\Phi$-function has as many arguments as y has predecessors}
-\State{$A_{\Phi}[a] \gets A_{\Phi}[a] \cup \{ y\}$}
-\If{a $\not\in$ $A_{orig}[y]$}
-\State{$W \gets W \cup \{y \}$}
-\EndIf
+		\For{each variable a}
+		\State W $\gets$ defsites[a]
+		\While{ W not empty}
+		\State{remove some node n from W}
+		\For{each y in DF[n]}
+		\If{y $\not\in$ $A_{\Phi}[a]$}
+		\State{insert the statement a $\gets$ $\Phi$(a, a, . . . , a) at the top of block y, where the $\Phi$-function has as many arguments as y has predecessors}
+		\State{$A_{\Phi}[a] \gets A_{\Phi}[a] \cup \{ y\}$}
+		\If{a $\not\in$ $A_{orig}[y]$}
+		\State{$W \gets W \cup \{y \}$}
+		\EndIf
 
-\EndIf
-\EndFor
-\EndWhile
-\EndFor
+		\EndIf
+		\EndFor
+		\EndWhile
+		\EndFor
 
-\end{algorithmic}
+	\end{algorithmic}
 \end{algorithm}
 
 
@@ -408,52 +408,52 @@ After the $\Phi$-functions are placed, we can walk the dominator tree, renaming 
 
 
 \begin{algorithm}
-\caption{Renaming variables.}\label{alg:Renaming variables}
-\begin{algorithmic}
-\State Initialization:
+	\caption{Renaming variables.}\label{alg:Renaming variables}
+	\begin{algorithmic}
+		\State Initialization:
 
-\For{each variable a}
-\State{Count[a] $\gets$ 0}
-\State{Stack[a] $\gets$ empty}
-\State{push 0 onto Stack[a]}
-\EndFor
+		\For{each variable a}
+		\State{Count[a] $\gets$ 0}
+		\State{Stack[a] $\gets$ empty}
+		\State{push 0 onto Stack[a]}
+		\EndFor
 
-\State{Rename(n) }
-\For{each statement S in block n}
-\If{S is not a $\Phi$-function}
-\For{each use of some variable x in S}
-\State{i $\gets$ top(Stack[x])}
-\State{replace the use of x with $x_i$ in S}
-\EndFor
-\EndIf
-\For{each definition of some variable a in S}
+		\State{Rename(n) }
+		\For{each statement S in block n}
+		\If{S is not a $\Phi$-function}
+		\For{each use of some variable x in S}
+		\State{i $\gets$ top(Stack[x])}
+		\State{replace the use of x with $x_i$ in S}
+		\EndFor
+		\EndIf
+		\For{each definition of some variable a in S}
 
-\State Count[a] $\gets$ Count[a]+1
-\State i $\gets$ Count[a]
-\State push i onto Stack[a]
-\State replace definition of a with definition of $a_i$ in S
-\EndFor
-\EndFor
+		\State Count[a] $\gets$ Count[a]+1
+		\State i $\gets$ Count[a]
+		\State push i onto Stack[a]
+		\State replace definition of a with definition of $a_i$ in S
+		\EndFor
+		\EndFor
 
-\For{each successor Y of block n,}
-\State Suppose n is the jth predecessor of Y
-\For{each $\Phi$-function in Y}
-\State suppose the jth operand of the $\Phi$-function is a
-\State i $\gets$ top(Stack[a])
-\State replace the jth operand with $a_i$
+		\For{each successor Y of block n,}
+		\State Suppose n is the jth predecessor of Y
+		\For{each $\Phi$-function in Y}
+		\State suppose the jth operand of the $\Phi$-function is a
+		\State i $\gets$ top(Stack[a])
+		\State replace the jth operand with $a_i$
 
-\EndFor
-\EndFor
-\For{each child X of n}
-\State Rename(X)
-\EndFor
-\For{each definition of some variable a in the original S}
-\State pop Stack[a]
-\EndFor
-\end{algorithmic}
+		\EndFor
+		\EndFor
+		\For{each child X of n}
+		\State Rename(X)
+		\EndFor
+		\For{each definition of some variable a in the original S}
+		\State pop Stack[a]
+		\EndFor
+	\end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Example} 
+\subsubsection{Example}
 
 
 

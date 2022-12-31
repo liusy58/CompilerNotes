@@ -486,6 +486,59 @@ extended Kildall's results to show that, given monotonic dataflow functions:
 
 
 
+\subsection{Speed of convergence}
+
+Preorder means visit parents before children, it isalso called \textbf{reverse postorder(RPO)}. Postorder means visit children before parent.
+RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster. 
+
+
+
+
+\begin{algorithm}
+	\caption{Depth-First Iterative Algorithm}\label{alg:Reverse Postorder}
+	\begin{algorithmic}
+		\State{{\color{blue}Step 1: depth-first post order}}
+		\Function{main()}{}
+		\State{{\color{blue}count} = 1;}
+		\State{Visit({\color{blue}root});}
+		\EndFunction
+
+		\Function{Visit(n)}{}
+		\For{{\color{blue}each successor s} that has {\color{blue}not been visited}}
+		\State{{\color{green}PostOrder}(n) = {\color{blue}count};}
+		\State{{\color{blue}count = count+1;}}
+		\EndFor
+		\EndFunction
+	\State{{\color{blue}Step 2: reverse order}}
+	\For{each node i}
+	\State{{\color{red}rPostOrder}(i)= {\color{blue}NumNodes} - {\color{green}PostOrder(i)}}
+	\EndFor
+	\State{Step 3: Depth-First Iterate}
+	\State{out[entry] = init\_value}
+	\For{all nodes i}
+	\State{out[i] = T}
+	\EndFor
+	\State{Change = True}
+	\While{Change}
+	\State{Change = False}
+	\For{each node i {\color{red}in rPostOrder}}
+	\State{in[i] = $\wedge$(out[p])}, for all predecessors p of i
+	\State{oldout = out[i]}
+	\State{out[i] = $f_i$ (in[i])}
+	\If {oldout $\neq$ out[i]}
+	\State{Change = True}
+	\EndIf
+	\EndFor
+	\EndWhile
+	\end{algorithmic}
+\end{algorithm}
+
+
+The number of passes are determined by number of back edges in the path essentially the nesting depth of the graph
+\[
+	\text{Number of iterations} = \text{number of back edges in any acyclic
+path} + 2
+\]
 \subsection{Summary}
 Let's answer the questions we asked before.
 \begin{itemize}
