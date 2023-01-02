@@ -334,7 +334,7 @@ The equations for constant propagation are as follows:\\
 \texttt{4.after} $=$  \texttt{4.before} \\
 
 Because of the cycle in the example CFG, the equations for  \texttt{3.before,
-3.after, 4.before, and 4.after} are mutually recursive, which leads to the
+	3.after, 4.before, and 4.after} are mutually recursive, which leads to the
 four solutions shown below (differing on those four values).
 
 $$
@@ -413,7 +413,7 @@ Recall that our informal definition of a dataflow problem included:
 \end{itemize}
 
 and that our goal is to solve a given instance of the problem by computing
-{\color{red} before} and {\color{red} after} sets for each node of the control-flow graph.
+	{\color{red} before} and {\color{red} after} sets for each node of the control-flow graph.
 A problem is that, with no additional information about the domain $D$,
 the operator $\wedge$ , and the dataflow functions $f_n$, we can't say,
 in general, whether a particular algorithm for computing the before
@@ -453,7 +453,7 @@ illustrate this is shown in Figure \ref{fig:p216}
 	\centering
 	\includegraphics[width=0.8\textwidth]{p216.png}
 	\caption{An example to illustrate that the
-	solution computed by the iterative algorithm for constant propagation not equal to MOP.}
+		solution computed by the iterative algorithm for constant propagation not equal to MOP.}
 	\label{fig:p216}
 \end{figure}
 
@@ -465,7 +465,7 @@ computed using the iterative algorithm) finds that $x$ is not constant at the
 print statement. This is because the equations require that \texttt{n.before} be the
 meet of \texttt{m.after} for all predecessors \texttt{m}; in particular, they require that
 the {\color{red} before} set for  \texttt{node 7 (x = a + b)}
- has empty, since the {\color{red} after} sets
+has empty, since the {\color{red} after} sets
 of the two predecessors have $(a,2), (b,3)$, and $(a,3), (b,2)$, respectively,
 and the intersection of those two sets is empty. Given that value for
 \texttt{7.before}, the equations require that \texttt{7.after} (and \texttt{8.before}) say that
@@ -489,7 +489,7 @@ extended Kildall's results to show that, given monotonic dataflow functions:
 \subsection{Speed of convergence}
 
 Preorder means visit parents before children, it isalso called \textbf{reverse postorder(RPO)}. Postorder means visit children before parent.
-RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster. 
+RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster.
 
 
 
@@ -509,27 +509,27 @@ RPO visits as many predecessors possible before visiting a node so in case of fo
 		\State{{\color{blue}count = count+1;}}
 		\EndFor
 		\EndFunction
-	\State{{\color{blue}Step 2: reverse order}}
-	\For{each node i}
-	\State{{\color{red}rPostOrder}(i)= {\color{blue}NumNodes} - {\color{green}PostOrder(i)}}
-	\EndFor
-	\State{Step 3: Depth-First Iterate}
-	\State{out[entry] = init\_value}
-	\For{all nodes i}
-	\State{out[i] = T}
-	\EndFor
-	\State{Change = True}
-	\While{Change}
-	\State{Change = False}
-	\For{each node i {\color{red}in rPostOrder}}
-	\State{in[i] = $\wedge$(out[p])}, for all predecessors p of i
-	\State{oldout = out[i]}
-	\State{out[i] = $f_i$ (in[i])}
-	\If {oldout $\neq$ out[i]}
-	\State{Change = True}
-	\EndIf
-	\EndFor
-	\EndWhile
+		\State{{\color{blue}Step 2: reverse order}}
+		\For{each node i}
+		\State{{\color{red}rPostOrder}(i)= {\color{blue}NumNodes} - {\color{green}PostOrder(i)}}
+		\EndFor
+		\State{Step 3: Depth-First Iterate}
+		\State{out[entry] = init\_value}
+		\For{all nodes i}
+		\State{out[i] = T}
+		\EndFor
+		\State{Change = True}
+		\While{Change}
+		\State{Change = False}
+		\For{each node i {\color{red}in rPostOrder}}
+		\State{in[i] = $\wedge$(out[p])}, for all predecessors p of i
+		\State{oldout = out[i]}
+		\State{out[i] = $f_i$ (in[i])}
+		\If {oldout $\neq$ out[i]}
+		\State{Change = True}
+		\EndIf
+		\EndFor
+		\EndWhile
 	\end{algorithmic}
 \end{algorithm}
 
@@ -537,7 +537,7 @@ RPO visits as many predecessors possible before visiting a node so in case of fo
 The number of passes are determined by number of back edges in the path essentially the nesting depth of the graph
 \[
 	\text{Number of iterations} = \text{number of back edges in any acyclic
-path} + 2
+		path} + 2
 \]
 \subsection{Summary}
 Let's answer the questions we asked before.
