@@ -33,8 +33,71 @@
 
 \subsection{Conditional Constant Propagation }
 
+In this section, we want to talk something about Conditional Constant Propagation. 
+Before we talk about it, we need to know something about the history of Constant Propagation.
+There are four algorithms for determining constants.
+ They are described in order of increasing power; each algorithm finds at least the
+constants found by the previous algorithm. These algorithms are among the
+simplest, fastest, and most powerful global constant propagation algorithms
+known. The first three algorithms are reformulations of the work of others;
+the fourth is new and contains the best features of each of the previous three.
+Figure \ref{fig:p223} shows the relationship among the four algorithms.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{p223.png}
+	\caption{Relationship among the four constant propagation algorithms}
+	\label{fig:p223}
+
+\end{figure}
+
+
+The first algorithm, Simple Constant (SC), was developed by Kildall\cite{kildall1973unified}. 
+Kildall was among the first to describe the
+constant propagation problem and to give an algorithmic solution.
+
+
+
+The second algorithm, Sparse Simple Constant (SSC), is an easily understood reformulation of an algorithm developed by Reif and Lewis\cite{reif1977symbolic}. 
+This algorithm uses a data
+structure called the static single assignment graph (SSA graph). The SSA
+graph is a variant of the global value graph of Reif and Lewis, which in
+turn is based on the p-graph of Shapiro and Saint. The SSA graph allows
+this algorithm to find a class of constants equivalent to those of SC, yet the
+algorithm is faster than SC by a factor proportional to the number of
+variables in the program. Indeed, the speedup can be proportional to the
+product of the number of variables in the program and the number of edges
+in the program flow graph. It is unfortunate that this algorithm was not
+recognized for many years, since it works in time linear in the size of the SSA
+graph.
+
+
+The third algorithm, Conditional Constant (CC), is a variant of Wegbreit’s
+Algorithm\cite{wegbreit1975property}. CC discovers all constants
+that can be found by evaluating all conditional branches with all constant
+operands, but it uses the same input data structures and is asymptotically as
+slow as SC. The attraction of CC is that it propagates the values in such a
+way that when conditional branches are found to have a constant conditional
+expression, the search for constants can ignore parts of the program that are
+never executed. The algorithm does unreachable code elimination in combination with constant propagation. 
+The first benefit of this approach is that
+the algorithm may run faster than SC, since it need not evaluate the sections
+of the program that are never executed. A second benefit is that values
+created in the unreachable areas cannot possibly kill potential constants, and
+thus CC can find more constants than can SC.
+
+The fourth algorithm, Sparse Conditional Constant (SCC) finds the same class of constants as CC, yet has
+the same speedup over CC as SSC has over SC.
+
+
 Wegman and Zadeck's Sparse Conditional Constant (SCC) algorithm was used to find constant expressions, 
-constant conditions, and unreachable code \cite{wegman1991constant}. The output of the SCC algorithm is an association of variables to one of $\lbrace \bot, c, \top \rbrace$, where $\bot$ marks a variable that can hold different values at different times, and $\top$ means the variable is not executed. In addition, every flow-graph node (corresponding to a quadruple) is marked as executable or non-executable. We then walk the flow-graph, eliminating dead-code (quadruples marked non-executable), replacing constant variables with their values, and changing constant conditional branches to goto statements.
+constant conditions, and unreachable code \cite{wegman1991constant}. The output of the SCC algorithm is 
+an association of variables to one of $\lbrace \bot, c, \top \rbrace$, where $\bot$ marks a variable that
+ can hold different values at different times, and $\top$ means the variable is not executed. In addition, 
+ every flow-graph node (corresponding to a quadruple) is marked as executable or non-executable. 
+ We then walk the flow-graph, eliminating dead-code (quadruples marked non-executable), replacing 
+ constant variables with their values, and changing constant conditional branches to goto statements.
 
 \begin{note}{notes}
 	\begin{itemize}
