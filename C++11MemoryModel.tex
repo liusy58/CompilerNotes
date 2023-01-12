@@ -1,0 +1,48 @@
+\newpage
+\section{Foundations of the C++ Concurrency Memory Model\cite{PPTTheC19:online,boehm2008foundations}}
+
+The memory model, or memory consistency model, specifies the
+values that a shared variable read in a multithreaded program is allowed to return. 
+The memory model clearly affects programmability. 
+It also affects performance and portability by constraining the
+transformations that any part of the system may perform. 
+
+
+
+
+
+A memory model, a.k.a memory consistency model, is a 
+specification of the allowed behavior of multithreaded 
+programs executing with shared memory . 
+The most basic model is sequential consistency (SC), 
+where all insructions from all threads (appear to) form a
+ total order that is consistent with the program order on 
+ each thread.
+
+
+
+\subsection{Concurrency needs sync }
+
+For performance gains, modern CPUs often execute 
+instructions out of order to fully utilize resources.
+ Since the hardware enforces instructions integrity,
+  we can never notice this in a single thread execution. 
+  However, for multiple threads, this can lead to 
+  unpredictable bahaviors.
+
+In multi-threaded execution, uncontrolled scheduling leads 
+to data race, where results depend on the timing execution 
+of the code. With some bad luck (i.e., context switches 
+that occur at untimely points in the execution), we get 
+the wrong result.
+
+\subsubsection{mutual exclusion (atomic)}
+To achieve atomicity, we can ask hardware for a few useful instructions to build mutual exclusion, which guarantees that if one thread is executing within the critical section, the others will be prevented from doing so.
+
+\subsubsection{ waiting for another (conditional variable)}
+There are many cases where a thread continues its execution 
+only when some condition is met. Thus, one thread must wait
+ for another to complete some action before it continues. 
+
+\subsection{Low-Level Atomics}
+
