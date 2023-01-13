@@ -2,6 +2,8 @@
 \section{Foundations of the C++ Concurrency Memory Model\cite{PPTTheC19:online,boehm2008foundations}}
 
 
+\subsection{Introduction\cite{TheC11Me27:online}}
+
 Momory model is the guarantee provided by the runtime environment to a 
 multithreaded program, regaring the order of memory operations. 
 Each level of the environment(e.g. CPU, virtual machine, compiler) might have a different memory model
@@ -166,14 +168,22 @@ Both asserts might fail because the stores on thread 1 are not ordered,
  started to execute.
 
 
+ \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{p228.png}
+    \caption{}
+    \label{fig:p229}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{p228.png}
+    \caption{}
+    \label{fig:p229}
+\end{figure}
 
 
-Predates C++ multi-threading
-Serves different purpose
-Intended for reading from memory that was written by a device
-Does not guarantee atomic
-Unspecified memory order
-However Java (and C#) volatile is very similar to C++ atomic
+However Java (and C\#) volatile is very similar to C++ atomic
 volatile was actually the only option in pre-C++11 code, but other than avoiding the use of a register it has no multi-threading semantics, because it was introduced way before C++ supported multi-threading. It does usually do the trick, but not due to some standard guarantee.
 Some compilers (VS) add ordering semantics (release consistency) on certain CPUs (Itanium) as an extension – but we’re talking about standard C++ here.
 
@@ -192,6 +202,10 @@ The memory model can be passed as run-time parameter
 But it is better to use it as a compilation constant to allow optimizations
 We only covered main orders
 C++11’s basic features are fully supported by all common compilers.
+
+
+
+\subsection{}
 
 
 The memory model, or memory consistency model, specifies the
