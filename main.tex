@@ -18,6 +18,15 @@
 %\include{footnoteformat}
 %\include{codesnipets}
 %\include{proofs}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
 \usepackage{amsmath} % for align
 \usepackage{subcaption}
 \captionsetup{compatibility=false}
@@ -192,6 +201,7 @@
 \input{TLS.tex}
 \input{PGO.tex}
 \input{Concurrent.tex}
+\input{KnowCPP.tex}
 \input{C++11MemoryModel.tex}
 \printbibliography
 
