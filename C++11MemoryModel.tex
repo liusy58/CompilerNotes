@@ -1,255 +1,397 @@
 \newpage
-\section{Foundations of the C++ Concurrency Memory Model\cite{PPTTheC19:online,boehm2008foundations}}
+% \section{Foundations of the C++ Concurrency Memory Model\cite{PPTTheC19:online,boehm2008foundations}}
 
 
-\subsection{Introduction\cite{TheC11Me27:online}}
+% \subsection{Introduction\cite{TheC11Me27:online}}
 
-Momory model is the guarantee provided by the runtime environment to a 
-multithreaded program, regaring the order of memory operations. 
-Each level of the environment(e.g. CPU, virtual machine, compiler) might have a different memory model
-.The 
-correctness of parallel algorithms depends on the memory model.
-
-
-\texttt{Threads}  are now part of the C++ 11language.
-Their behavior must be fully defined so that the same code
- run the same on different environments regardless of the CPU
-  (Intel, AMD, ARM, …) or the OS.
+% Momory model is the guarantee provided by the runtime environment to a 
+% multithreaded program, regaring the order of memory operations. 
+% Each level of the environment(e.g. CPU, virtual machine, compiler) might have a different memory model
+% .The 
+% correctness of parallel algorithms depends on the memory model.
 
 
+% \texttt{Threads}  are now part of the C++ 11language.
+% Their behavior must be fully defined so that the same code
+%  run the same on different environments regardless of the CPU
+%   (Intel, AMD, ARM, …) or the OS.
 
 
-Undefined behaviour matters a lot. See the example shown in \ref{lst:e1} . 
-The compiler knows x is bound between 0 and 2, so instead of 
-creating a series of if’s, it can simply jump to 
-(switch base address + x * constant). 
-But if x is shared and unprotected, it might be changed 
-between the if and the switch, causing an unrestricted jump,
- which can cause unpredictable damages.
-Races are forbidden because the compiler can’t always recognize them (static analysis in not required by the standard), 
-and to avoid them the programmer must help the compiler.
-In the example above, even if x were somehow protected, it could still be modified between the if and the switch. 
-This would have caused the code to behave differently from the serial implementation. 
-However, had the compiler known x might be modified by another thread, 
-it would not have used the unsafe jump table optimization.
 
 
-\begin{lstlisting}[language=C,frame=single, caption=An simple example  ,label = lst:e1]
-if(x >= 0 && x < 3){
-    switch(x){
-        case 0 : do0(); break;
-        case 1 : do1(); break;
-        case 2 : do2(); break;
-    }
-}
+% Undefined behaviour matters a lot. See the example shown in \ref{lst:e1} . 
+% The compiler knows x is bound between 0 and 2, so instead of 
+% creating a series of if’s, it can simply jump to 
+% (switch base address + x * constant). 
+% But if x is shared and unprotected, it might be changed 
+% between the if and the switch, causing an unrestricted jump,
+%  which can cause unpredictable damages.
+% Races are forbidden because the compiler can’t always recognize them (static analysis in not required by the standard), 
+% and to avoid them the programmer must help the compiler.
+% In the example above, even if x were somehow protected, it could still be modified between the if and the switch. 
+% This would have caused the code to behave differently from the serial implementation. 
+% However, had the compiler known x might be modified by another thread, 
+% it would not have used the unsafe jump table optimization.
+
+
+% \begin{lstlisting}[language=C,frame=single, caption=An simple example  ,label = lst:e1]
+% if(x >= 0 && x < 3){
+%     switch(x){
+%         case 0 : do0(); break;
+%         case 1 : do1(); break;
+%         case 2 : do2(); break;
+%     }
+% }
+% \end{lstlisting}
+
+
+% Single-threaded programs are fairly easy to optimize, because there’s no “external viewer” (other than the output). 
+% So most of the time they execute “atomically”. Shared variables, however, might be viewed by different threads at 
+% (almost) any given moment. So, their modifications by one thread must seem to be ordered to other threads.
+% The listed optimizations in Listing\ref{lst:e1}  are just an example  obviously there are many more.
+% Notice that in c++11 some optimizations can be seen by other threads, which is fully defined by c++11’s memory model.
+
+
+% A memory location does not depend on the size of the type, and can be part of an array or struct/class.
+% Bit fields are different: several might occupy a single memory location.
+% About the example in  Listing\ref{lst:e2}: writing single bytes can be inefficient on some systems.
+%  It could be faster to read the whole array of chars, for instance, as a single 32-bit word,
+%   update one element, and write the whole word back. But that might introduce a race on the other elements!
+% This is similar to having two variables on the same cache line. Updating one must not override an update 
+% of the other. This requires non-trivial synchronization, and a performance overhead. 
+% This wasn’t a problem on single threaded programs.
+% In Java, update of a variable smaller or equal to a dword should not affect an adjacent variable (like C++11). 
+% However, longs and doubles are not guaranteed to be atomic (unless defined as volatile, in which 
+% case they are always atomic). This is due to the fact that it is a multi-step operation at the machine code level.
+% Note: int i:3 means that the compiler will use 3 bits to store i.
+
+
+% \begin{lstlisting}[language=C,frame=single, caption=An simple example  ,label = lst:e2]
+
+% struct s {
+% char c[4];
+% int i: 3, j: 4;
+% struct in {
+% double d;
+% } id;
+% };
+% \end{lstlisting}
+
+% The Sequence Before is the order imposed by the appearance of (most) statements in the code, for a single thread.
+% On some occasions, the sequence of execution is not specified (such as function argument evaluation). 
+% This cases are therefore unordered with respect to each other. For instance, in f(h(), g()) 
+% it is unspecified whether h() or g() will be executed first. Yet, both h() and g() are always sequenced 
+% before f().
+
+% Synchronized with is the order imposed by an atomic read of a value that has been atomically written
+%  by some other thread. The said synchronization does not rely on any synchronization object. 
+%  It means that when E1 synchronizes with E2, every write done before E1 should be visible 
+%  to reads done after E2; and no write done after E1 should be visible to reads done before E2. 
+%  This defines an order that crosses thread boundaries.
+
+%  Inter-thread happens-before is a combination of sequenced before and synchronized with.
+
+
+%  Here \ref{fig:p224}, the events in thread 1 inter-thread happen-before the events in thread 2.
+
+%  \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p224.png}
+%     \caption{}
+%     \label{fig:p224}
+% \end{figure}
+
+
+
+
+% The blue arrows \ref{fig:p225} are sequenced-before. The green arrow is synchronized-with. 
+% Together they form an inter-thread happens-before relation, 
+% which guarantees the write to y happens-before reading it.
+% Note that y isn’t atomic, and in general not safe to use as shared variable. 
+% However, in this particular scenario, its accesses are synchronized by the use of the atomic x.
+% The assert is guaranteed not to fail
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p225.png}
+%     \caption{}
+%     \label{fig:p225}
+% \end{figure}
+
+
+% Synchronized-with relation exists only between the releasing thread and the acquiring thread
+% Other threads might see updates in a different order.
+% All writes before a release are visible after an acquire.
+% Even if they were relaxed or non-atomic.
+% Similar to release consistency memory model.
+
+
+
+
+
+
+% The writes are on different threads. Each acquiring thread is synchronized with 
+% the thread that has done the release. Thus, the releases are unordered.
+% If sequential consistency had been used instead of acquire-release,
+%  the results would have been different. 
+%  There would have been a total order of writes, so if one of the asserts had succeeded, 
+%  the other must have failed.
+
+%  \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p226.png}
+%     \caption{}
+%     \label{fig:p226}
+% \end{figure}
+
+
+
+
+% In this model, two processors might see writes to two variables(done by some third processor) 
+% in a different order.
+% This is where C++ atomic differs from Java volatile: Java never relaxes program order between 
+% volatile variables, while C++ allows reordering of (and across) atomic variables.
+
+
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p227.png}
+%     \caption{}
+%     \label{fig:p227}
+% \end{figure}
+
+% Both asserts might fail because the stores on thread 1 are not ordered,
+%  and different threads might see them in a different order. 
+%  One way for this to happen is if thread 3 has a speculative load of x before 
+%  the if. When this is the case, x might be read before threads 1 and 2 
+%  started to execute.
+
+
+%  \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p228.png}
+%     \caption{}
+%     \label{fig:p228}
+% \end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{p229.png}
+%     \caption{}
+%     \label{fig:p229}
+% \end{figure}
+
+
+% However Java (and C\#) volatile is very similar to C++ atomic
+% volatile was actually the only option in pre-C++11 code, but other than avoiding the use of a register it has no multi-threading semantics, because it was introduced way before C++ supported multi-threading. It does usually do the trick, but not due to some standard guarantee.
+% Some compilers (VS) add ordering semantics (release consistency) on certain CPUs (Itanium) as an extension – but we’re talking about standard C++ here.
+
+
+% Lock-free code is hard to write
+% Unless speed is crucial, better use mutexes
+% Sequential consistency is the default
+% It is also the memory model for function that does not have memory-model as an input parameter
+% Use the default sequential consistency and avoid data races. Really.
+% Acquire-release is hard
+% Relaxed is much harder
+% Mixing orders is insane (but allowed)
+
+% 27 Summary and recommendations (2)
+% The memory model can be passed as run-time parameter
+% But it is better to use it as a compilation constant to allow optimizations
+% We only covered main orders
+% C++11’s basic features are fully supported by all common compilers.
+
+
+
+% \subsection{}
+
+
+% The memory model, or memory consistency model, specifies the
+% values that a shared variable read in a multithreaded program is allowed to return. 
+% The memory model clearly affects programmability. 
+% It also affects performance and portability by constraining the
+% transformations that any part of the system may perform. 
+
+
+
+
+
+% A memory model, a.k.a memory consistency model, is a 
+% specification of the allowed behavior of multithreaded 
+% programs executing with shared memory . 
+% The most basic model is sequential consistency (SC), 
+% where all insructions from all threads (appear to) form a
+%  total order that is consistent with the program order on 
+%  each thread.
+
+
+
+% \subsection{Concurrency needs sync }
+
+% For performance gains, modern CPUs often execute 
+% instructions out of order to fully utilize resources.
+%  Since the hardware enforces instructions integrity,
+%   we can never notice this in a single thread execution. 
+%   However, for multiple threads, this can lead to 
+%   unpredictable bahaviors.
+
+% In multi-threaded execution, uncontrolled scheduling leads 
+% to data race, where results depend on the timing execution 
+% of the code. With some bad luck (i.e., context switches 
+% that occur at untimely points in the execution), we get 
+% the wrong result.
+
+% \subsubsection{mutual exclusion (atomic)}
+% To achieve atomicity, we can ask hardware for a few useful instructions to build mutual exclusion, which guarantees that if one thread is executing within the critical section, the others will be prevented from doing so.
+
+% \subsubsection{ waiting for another (conditional variable)}
+% There are many cases where a thread continues its execution 
+% only when some condition is met. Thus, one thread must wait
+%  for another to complete some action before it continues. 
+
+% \subsection{Low-Level Atomics}
+
+
+
+
+\section{Memory Model}
+
+\subsection{Why Memory Model?}
+
+
+
+\subsection{Memory Coherence}
+
+Memory coherence: a memory system is coherent if any read of a data item returns the most recently written value of that data item.
+\subsection{Coherent memory system}
+A Coherent memory system should satisfy the following requirements:
+\begin{itemize}
+    \item For a memory address wrote by a processor P, the next reads of P should get the written value.
+    \item For a memory address wrote by a processor P1, after enough time, another processor P2 can get the value written by P1.
+    \item The write operations for one memory address are serialized, so if there are 2 writes to a memory address by any processor, any processor cannot get two results in different order.
+\end{itemize}
+
+The coherence model does not define when a wrote by P1 can be read by P2. The memory consistency model is responsible for it.
+
+
+\subsection{Memory Consistency}
+
+A memory consistency model for a shared address space specifies
+ constraints on the order in which memory operations must appear 
+ to be performed (i.e. to become visible to the processors) with 
+ respect to one another.(when a written value will be returned/seen 
+ by a read).
+
+The memory consistency model defines the order of operation pairs in different addresses.
+
+
+
+
+\subsection{C++ Memory Order}
+
+\subsubsection{Introduction}
+The C++ specification does not make reference to any particular compiler,
+ operating system, or CPU. It makes reference to an abstract machine that
+  is a generalization of actual systems. In the Language Lawyer world, 
+  the job of the programmer is to write code for the abstract machine;
+   the job of the compiler is to actualize that code on a concrete 
+   machine. By coding rigidly to the spec, you can be certain that your
+    code will compile and run without modification on any system with 
+    a compliant C++ compiler, whether today or 50 years from now.
+
+The abstract machine in the C++98/C++03 specification is fundamentally 
+single-threaded. So it is not possible to write multi-threaded C++ 
+code that is "fully portable" with respect to the spec. The spec does 
+not even say anything about the atomicity of memory loads and stores 
+or the order in which loads and stores might happen, never mind things 
+like mutexes.
+
+Of course, you can write multi-threaded code in practice for particular 
+concrete systems like pthreads or Windows. But there is no standard way 
+to write multi-threaded code for C++98/C++03.
+
+The abstract machine in C++11 is multi-threaded by design. It also has 
+a well-defined memory model; that is, \textbf{it says what the compiler 
+may and may not do when it comes to accessing memory}.
+
+Consider the following example \ref{C++:1}, where a pair of global variables 
+are accessed concurrently by two threads:
+
+
+\begin{lstlisting}[label={C++:1},caption={An example about C++ memory model}]
+        Global
+        int x, y;
+
+Thread 1            Thread 2
+x = 17;             cout << y << " ";
+y = 37;             cout << x << endl;
 \end{lstlisting}
 
 
-Single-threaded programs are fairly easy to optimize, because there’s no “external viewer” (other than the output). 
-So most of the time they execute “atomically”. Shared variables, however, might be viewed by different threads at 
-(almost) any given moment. So, their modifications by one thread must seem to be ordered to other threads.
-The listed optimizations in Listing\ref{lst:e1}  are just an example  obviously there are many more.
-Notice that in c++11 some optimizations can be seen by other threads, which is fully defined by c++11’s memory model.
+What might Thread 2 output?
+
+Under C++98/C++03, this is not even Undefined Behavior; the question itself is
+ meaningless because the standard does not contemplate anything called a
+  "thread".
+
+Under C++11, the result is Undefined Behavior, because loads and stores 
+need not be atomic in general. Which may not seem like much of an improvement. 
+And by itself, it's not.
+
+But with C++11, you can write this \ref{C++:2}
 
 
-A memory location does not depend on the size of the type, and can be part of an array or struct/class.
-Bit fields are different: several might occupy a single memory location.
-About the example in  Listing\ref{lst:e2}: writing single bytes can be inefficient on some systems.
- It could be faster to read the whole array of chars, for instance, as a single 32-bit word,
-  update one element, and write the whole word back. But that might introduce a race on the other elements!
-This is similar to having two variables on the same cache line. Updating one must not override an update 
-of the other. This requires non-trivial synchronization, and a performance overhead. 
-This wasn’t a problem on single threaded programs.
-In Java, update of a variable smaller or equal to a dword should not affect an adjacent variable (like C++11). 
-However, longs and doubles are not guaranteed to be atomic (unless defined as volatile, in which 
-case they are always atomic). This is due to the fact that it is a multi-step operation at the machine code level.
-Note: int i:3 means that the compiler will use 3 bits to store i.
+\begin{lstlisting}[label={C++:2},caption={Using atomic in C++}]
+            Global
+            atomic<int> x, y;
 
-
-\begin{lstlisting}[language=C,frame=single, caption=An simple example  ,label = lst:e2]
-
-struct s {
-char c[4];
-int i: 3, j: 4;
-struct in {
-double d;
-} id;
-};
+Thread 1                 Thread 2
+x.store(17);             cout << y.load() << " ";
+y.store(37);             cout << x.load() << endl;
 \end{lstlisting}
 
-The Sequence Before is the order imposed by the appearance of (most) statements in the code, for a single thread.
-On some occasions, the sequence of execution is not specified (such as function argument evaluation). 
-This cases are therefore unordered with respect to each other. For instance, in f(h(), g()) 
-it is unspecified whether h() or g() will be executed first. Yet, both h() and g() are always sequenced 
-before f().
 
-Synchronized with is the order imposed by an atomic read of a value that has been atomically written
- by some other thread. The said synchronization does not rely on any synchronization object. 
- It means that when E1 synchronizes with E2, every write done before E1 should be visible 
- to reads done after E2; and no write done after E1 should be visible to reads done before E2. 
- This defines an order that crosses thread boundaries.
+Now things get much more interesting. First of all, the behavior here is defined.
+ Thread 2 could now print \textbf{0 0} (if it runs before Thread 1), 
+ \textbf{37 17} (if it runs after Thread 1), or \textbf{0 17} (if it runs after Thread 1 assigns 
+ to x but before it assigns to y).
 
- Inter-thread happens-before is a combination of sequenced before and synchronized with.
+What it cannot print is 37 0, because the default mode for atomic 
+loads/stores in C++11 is to enforce sequential consistency.
+ This just means all loads and stores must be "as if" they happened
+  in the order you wrote them within each thread, while operations 
+  among threads can be interleaved however the system likes. 
+  So the default behavior of atomics provides both atomicity and 
+  ordering for loads and stores.
 
-
- Here \ref{fig:p224}, the events in thread 1 inter-thread happen-before the events in thread 2.
-
- \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p224.png}
-    \caption{}
-    \label{fig:p224}
-\end{figure}
+Now, on a modern CPU, ensuring sequential consistency can be expensive. 
+In particular, the compiler is likely to emit full-blown memory barriers 
+between every access here. But if your algorithm can tolerate out-of-order 
+loads and stores; i.e., if it requires atomicity but not ordering; i.e., 
+if it can tolerate 37 0 as output from this program, then you can write this\ref{C++:3}:
 
 
+\begin{lstlisting}[label={C++:3},caption={Using memory\_order\_relaxed in C++}]
+                            Global
+                            int x, y;
+
+Thread 1                            Thread 2
+x.store(17,memory_order_relaxed);   cout << y.load(memory_order_relaxed) << " ";
+y.store(37,memory_order_relaxed);   cout << x.load(memory_order_relaxed) << endl;
+\end{lstlisting}
 
 
-The blue arrows \ref{fig:p225} are sequenced-before. The green arrow is synchronized-with. 
-Together they form an inter-thread happens-before relation, 
-which guarantees the write to y happens-before reading it.
-Note that y isn’t atomic, and in general not safe to use as shared variable. 
-However, in this particular scenario, its accesses are synchronized by the use of the atomic x.
-The assert is guaranteed not to fail
+This takes us back to the ordered loads and stores
+ so 37 0 is no longer a possible output: but it does so with minimal overhead. 
+ (In this trivial example, the result is the same as full-blown sequential 
+ consistency; in a larger program, it would not be.)
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p225.png}
-    \caption{}
-    \label{fig:p225}
-\end{figure}
+Of course, if the only outputs you want to see are 0 0 or 37 17, 
+you can just wrap a mutex around the original code. But if you have read 
+this far, I bet you already know how that works, and this answer is 
+already longer than I intended :-).
 
 
-Synchronized-with relation exists only between the releasing thread and the acquiring thread
-Other threads might see updates in a different order.
-All writes before a release are visible after an acquire.
-Even if they were relaxed or non-atomic.
-Similar to release consistency memory model.
-
-
-
-
-
-
-The writes are on different threads. Each acquiring thread is synchronized with 
-the thread that has done the release. Thus, the releases are unordered.
-If sequential consistency had been used instead of acquire-release,
- the results would have been different. 
- There would have been a total order of writes, so if one of the asserts had succeeded, 
- the other must have failed.
-
- \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p226.png}
-    \caption{}
-    \label{fig:p226}
-\end{figure}
-
-
-
-
-In this model, two processors might see writes to two variables(done by some third processor) 
-in a different order.
-This is where C++ atomic differs from Java volatile: Java never relaxes program order between 
-volatile variables, while C++ allows reordering of (and across) atomic variables.
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p227.png}
-    \caption{}
-    \label{fig:p227}
-\end{figure}
-
-Both asserts might fail because the stores on thread 1 are not ordered,
- and different threads might see them in a different order. 
- One way for this to happen is if thread 3 has a speculative load of x before 
- the if. When this is the case, x might be read before threads 1 and 2 
- started to execute.
-
-
- \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p228.png}
-    \caption{}
-    \label{fig:p228}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.4\textwidth]{p229.png}
-    \caption{}
-    \label{fig:p229}
-\end{figure}
-
-
-However Java (and C\#) volatile is very similar to C++ atomic
-volatile was actually the only option in pre-C++11 code, but other than avoiding the use of a register it has no multi-threading semantics, because it was introduced way before C++ supported multi-threading. It does usually do the trick, but not due to some standard guarantee.
-Some compilers (VS) add ordering semantics (release consistency) on certain CPUs (Itanium) as an extension – but we’re talking about standard C++ here.
-
-
-Lock-free code is hard to write
-Unless speed is crucial, better use mutexes
-Sequential consistency is the default
-It is also the memory model for function that does not have memory-model as an input parameter
-Use the default sequential consistency and avoid data races. Really.
-Acquire-release is hard
-Relaxed is much harder
-Mixing orders is insane (but allowed)
-
-27 Summary and recommendations (2)
-The memory model can be passed as run-time parameter
-But it is better to use it as a compilation constant to allow optimizations
-We only covered main orders
-C++11’s basic features are fully supported by all common compilers.
-
-
-
-\subsection{}
-
-
-The memory model, or memory consistency model, specifies the
-values that a shared variable read in a multithreaded program is allowed to return. 
-The memory model clearly affects programmability. 
-It also affects performance and portability by constraining the
-transformations that any part of the system may perform. 
-
-
-
-
-
-A memory model, a.k.a memory consistency model, is a 
-specification of the allowed behavior of multithreaded 
-programs executing with shared memory . 
-The most basic model is sequential consistency (SC), 
-where all insructions from all threads (appear to) form a
- total order that is consistent with the program order on 
- each thread.
-
-
-
-\subsection{Concurrency needs sync }
-
-For performance gains, modern CPUs often execute 
-instructions out of order to fully utilize resources.
- Since the hardware enforces instructions integrity,
-  we can never notice this in a single thread execution. 
-  However, for multiple threads, this can lead to 
-  unpredictable bahaviors.
-
-In multi-threaded execution, uncontrolled scheduling leads 
-to data race, where results depend on the timing execution 
-of the code. With some bad luck (i.e., context switches 
-that occur at untimely points in the execution), we get 
-the wrong result.
-
-\subsubsection{mutual exclusion (atomic)}
-To achieve atomicity, we can ask hardware for a few useful instructions to build mutual exclusion, which guarantees that if one thread is executing within the critical section, the others will be prevented from doing so.
-
-\subsubsection{ waiting for another (conditional variable)}
-There are many cases where a thread continues its execution 
-only when some condition is met. Thus, one thread must wait
- for another to complete some action before it continues. 
-
-\subsection{Low-Level Atomics}
-
+See more from \cite{CppConcu2:online}
