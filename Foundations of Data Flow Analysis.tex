@@ -227,6 +227,81 @@ A framework \((F,V,\wedge)\) is distributive if and only if it
 Reaching definitions is distributive but constant propogation is not.
 
 
+
+
+\subsection{Defining a Dataflow Problem}
+
+
+Before thinking about how to define a dataflow problem, note that there are two kinds of problems:
+\begin{itemize}
+\item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n.
+\item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit".
+
+
+\end{itemize}	
+In what follows, we will assume that we're thinking about a forward problem unless otherwise specified.
+
+Another way that many common dataflow problems can be categorized is as 
+may problems or must problems. The solution to a "may" problem provides 
+information about what may be true at each program point 
+(e.g., for live-variables analysis, a variable is considered live after 
+node n if its value may be used before being overwritten, 
+while for constant propagation, the pair (x, v) holds before node n if x
+ must have the value v at that point).
+
+Now let's think about how to define a dataflow problem so that it's 
+clear what the (best) solution should be. When we do dataflow analysis 
+"by hand", we look at the CFG and think about:
+
+\begin{itemize}
+	\item 	What information holds at the start of the program.
+	\item 	When a node n has more than one incoming edge in the CFG, how to combine the incoming information (i.e., given the information that holds after each predecessor of n, how to combine that information to determine what holds before n).
+	\item 	How the execution of each node changes the information.
+	
+\end{itemize}	
+This intuition leads to the following definition. An instance of a dataflow problem includes:
+
+
+\begin{itemize}
+	\item a CFG,
+	\item a domain D of "dataflow facts",
+	\item a dataflow fact "init" (the information true at the start of the program for forward problems, or at the end of the program for backward problems),
+	\item an operator $\wedge$ (used to combine incoming information from multiple predecessors),
+	\item for each CFG node n, a dataflow function $f_n : D \rightarrow D$ (that defines the effect of executing n).
+			
+\end{itemize}	
+
+For constant propagation, an individual dataflow fact is a set of pairs of the form (var, val), so the domain of dataflow facts is the set of all such sets of pairs (the power set). For live-variable analysis, it is the power set of the set of variables in the program.
+
+For both constant propagation and live-variable analysis, the "init" fact is the empty set (no variable starts with a constant value, and no variables are live at the end of the program).
+
+For constant propagation, the combining operation $\wedge$ is set intersection. This is because if a node n has two predecessors, p1 and p2, then variable x has value v before node n iff it has value v after both p1 and p2. For live-variable analysis, $\wedge$ is set union: if a node n has two successors, s1 and s2, then the value of x after n may be used before being overwritten iff that holds either before s1 or before s2. In general, for "may" dataflow problems, $\wedge$ will be some union-like operator, while it will be an intersection-like operator for "must" problems.
+
+For constant propagation, the dataflow function associated with a CFG node that does not assign to any variable (e.g., a predicate) is the identity function. For a node n that assigns to a variable x, there are two possibilities:
+\begin{itemize}
+\item The right-hand side has a variable that is not constant. In this case, the function result is the same as its input except that if variable x was constant the before n, it is not constant after n.
+\item All right-hand-side variables have constant values. In this case, the right-hand side of the assignment is evaluated producing consant-value c, and the dataflow-function result is the same as its input except that it includes the pair (x, c) for variable x (and excludes the pair for x, if any, that was in the input).
+
+\end{itemize}	
+For live-variable analysis, the dataflow function for each node n has 
+the form: $f_n(S) = (S - KILL_n)  \cup  GEN_n$, where $KILL_n$
+ is the set of variables defined at node n, and $GEN_n$ is the set 
+ of variables used at node n. In other words, for a node
+  that does not assign to any variable, the variables that
+   are live before n are those that are live after n plus those 
+   that are used at n; for a node that assigns to variable x, the 
+   variables that are live before n are those that are live after 
+   n except x, plus those that are used at n (including x if it 
+   is used at n as well as being defined there).
+
+
+   
+It turns out that a number of interesting dataflow problems 
+have dataflow functions of this same form, where $GEN_n$ and $KILL_n$
+ are sets whose definition depends only on n, and the combining 
+ operator $\wedge$ is either union or intersection. These problems 
+ are called GEN/KILL problems, or bit-vector problems.
+
 \subsection{Meet-Over-Paths(MOP)\cite{DATAFLOW66:online}}
 
 A solution to an instance of a dataflow problem is a dataflow fact for each node of the given CFG. But what does it mean for a solution to be correct, and if there is more than one correct solution, how can we judge whether one is better than another?
@@ -281,26 +356,26 @@ The alternative to computing the MOP solution directly, is to solve a system of 
 that essentially specify that local information must be consistent with the dataflow functions.
 In particular, we associate two dataflow facts with each node n:
 \begin{itemize}
-	\item n.before: the information that holds before n executes, and
-	\item n.after: the information that holds after n executes.
+	\item \textit{n.before}: the information that holds before n executes, and
+	\item \textit{n.after}: the information that holds after n executes.
 \end{itemize}
 
-These n.befores and n.afters are the variables of our equations,
+These \textit{n.before}s and \textit{n.after}s are the variables of our equations,
 which are defined as follows (two equations for each node n):
 
 
 \begin{itemize}
-	\item n.before = $\wedge$(p1.after, p2.after, ...)
+	\item \textit{n.before} = $\wedge$(\textit{p1.after, p2.after}, ...)
 	      where p1, p2, etc are n's predecessors in the CFG (and $\wedge$ is the
 	      combining operator for this dataflow problem).
-	\item n.after = $f_n$(n.before)
+	\item \textit{n.after} = $f_n$(\textit{n.before})
 \end{itemize}
 
 In addition, we have one equation for the enter node:
 
 \begin{itemize}
 
-	\item enter.after = init (recall that "init" is part of the specification of a dataflow problem)
+	\item \textit{enter.after = init} (recall that "init" is part of the specification of a dataflow problem)
 \end{itemize}
 
 These equations make intuitive sense: the dataflow information that holds
@@ -323,6 +398,7 @@ is given in Figure \ref{fig:p215}:
 \end{figure}
 
 The equations for constant propagation are as follows:\\
+{
 \texttt{enter.after} $= \Phi $ \\
 \texttt{1.before} $=$  \texttt{enter.after} \\
 \texttt{1.after} $=$ \texttt{1.before} $-(x, *)$ {\color{red} union} $(x, 2)$  \\
@@ -332,22 +408,22 @@ The equations for constant propagation are as follows:\\
 \texttt{3.after} $=$  \texttt{3.before} \\
 \texttt{4.before} $=$  \texttt{3.after} \\
 \texttt{4.after} $=$  \texttt{4.before} \\
-
+}
 Because of the cycle in the example CFG, the equations for  \texttt{3.before,
 	3.after, 4.before, and 4.after} are mutually recursive, which leads to the
 four solutions shown below (differing on those four values).
 
 $$
-	\begin{array}{||c||c||c||c|c||}
+	\begin{array}{|c|c|c|c|c|}
 		\hline \text { Variable }        & \text { Solution 1 } & \text { Solution 2 } & \text { Solution 3 } & \text { Solution 4 } \\
-		\hline \hline \text { 1.before } & \{\}                 & \{\}                 & \{\}                 & \{\}                 \\
-		\hline \hline \text { 1.after }  & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
-		\hline \hline \text { 2.before } & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
-		\hline \hline \text { 2.after }  & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     \\
-		\hline \hline \text { 3.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
-		\hline \hline \text { 3.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
-		\hline \hline \text { 4.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
-		\hline \hline \text { 4.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline  \text { 1.before } & \{\}                 & \{\}                 & \{\}                 & \{\}                 \\
+		\hline  \text { 1.after }  & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
+		\hline  \text { 2.before } & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
+		\hline  \text { 2.after }  & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     & \{(x, 2)(y, 2)\}     \\
+		\hline  \text { 3.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline  \text { 3.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline  \text { 4.before } & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
+		\hline  \text { 4.after }  & \{\}                 & \{(x, 2)\}           & \{(y, 2)\}           & \{(x, 2)(y, 2)\}     \\
 		\hline
 	\end{array}
 $$
@@ -380,17 +456,17 @@ will see that this initial value is the top element of the lattice.)
 \begin{algorithm}
 	\caption{Iterative Algorithms}\label{alg:Iterative Algorithms}
 	\begin{algorithmic}
-		\State{Step 1 (initialize n.afters):}
-		\State{Set enter.after = init. Set all other n.after to $T$.}
+		\State{Step 1 (initialize \textit{n.after}s):}
+		\State{Set enter.after = init. Set all other \textit{n.after} to $T$.}
 		\State{Step 2 (initialize worklist):}
 		\State{Initialize a worklist to contain all CFG nodes except enter and exit.}
 		\State{Step 3 (iterate):}
 		\While{the worklist is not empty:}
 		\State{Remove a node n from the worklist.}
-		\State{Compute n.before by combining all p.after such that p is a predecessor of n in the CFG.}
-		\State{Compute tmp = $f_n$( n.before )}
-		\If{tmp != n.after}
-		\State{Set n.after = tmp}
+		\State{Compute \textit{n.before} by combining all p.after such that p is a predecessor of n in the CFG.}
+		\State{Compute tmp = $f_n$( \textit{n.before} )}
+		\If{tmp != \textit{n.after}}
+		\State{Set \textit{n.after} = tmp}
 		\State{Put all of n's successors on the worklist}
 		\EndIf
 		\EndWhile
@@ -431,7 +507,7 @@ on $D$, $\wedge$ , and $f_n$. In particular he required that:
 	\item  $\wedge$ be the lattice's meet operator.
 	\item  All $f_n$ be distributive.
 \end{itemize}
-He also required (essentially) that the iterative algorithm initialize n.after (for all nodes n other than the enter node) to the lattice's "top" value. (Kildall's algorithm is slightly different from the iterative algorithm presented here, but computes the same result.)
+He also required (essentially) that the iterative algorithm initialize \textit{n.after} (for all nodes n other than the enter node) to the lattice's "top" value. (Kildall's algorithm is slightly different from the iterative algorithm presented here, but computes the same result.)
 
 Given these properties, Kildall showed that:
 \begin{itemize}
@@ -462,7 +538,7 @@ The MOP solution for the final \texttt{print} statement includes the pair $(x,5)
 since $x$ is assigned the value $5$ on both paths to that statement. However,
 the greatest solution to the set of equations for this program (the result
 computed using the iterative algorithm) finds that $x$ is not constant at the
-print statement. This is because the equations require that \texttt{n.before} be the
+print statement. This is because the equations require that \texttt{\textit{n.before}} be the
 meet of \texttt{m.after} for all predecessors \texttt{m}; in particular, they require that
 the {\color{red} before} set for  \texttt{node 7 (x = a + b)}
 has empty, since the {\color{red} after} sets
@@ -488,13 +564,13 @@ extended Kildall's results to show that, given monotonic dataflow functions:
 
 \subsection{Speed of convergence}
 
-Preorder means visit parents before children, it isalso called \textbf{reverse postorder(RPO)}. Postorder means visit children before parent.
-RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster.
+Preorder means visit parents before children, it isalso called \textbf{reverse postorder(RPO)} . Postorder means visit children before parent.
+RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster (as shown in Algorithm \ref{alg:Reverse Postorder}).
 
 
 
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Depth-First Iterative Algorithm}\label{alg:Reverse Postorder}
 	\begin{algorithmic}
 		\State{{\color{blue}Step 1: depth-first post order}}
@@ -513,7 +589,7 @@ RPO visits as many predecessors possible before visiting a node so in case of fo
 		\For{each node i}
 		\State{{\color{red}rPostOrder}(i)= {\color{blue}NumNodes} - {\color{green}PostOrder(i)}}
 		\EndFor
-		\State{Step 3: Depth-First Iterate}
+		\State{\color{blue}Step 3: Depth-First Iterate}
 		\State{out[entry] = init\_value}
 		\For{all nodes i}
 		\State{out[i] = T}
@@ -539,6 +615,9 @@ The number of passes are determined by number of back edges in the path essentia
 	\text{Number of iterations} = \text{number of back edges in any acyclic
 		path} + 2
 \]
+in	real	programs,	average	of	2.75	
+
+
 \subsection{Summary}
 Let's answer the questions we asked before.
 \begin{itemize}

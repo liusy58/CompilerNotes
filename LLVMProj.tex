@@ -2,27 +2,5 @@
 
 \section{The LLVM project}
 
-LLVM is an open-source framework providing a modern collection of modular and reusable
-compiler and toolchain technologies [20]. The project stemmed from the work of Chris
-Lattner, who first implemented core elements of LLVM to support the research of his
-master thesis in 2002 [26]. One of the key strengths of LLVM is that it faces active
-development from an expert community of contributors, and is widely used across the
-industry and academia alike [11]. The project received the ACM Software System Award
-in 2012 [4] as an acknowledgement of its contribution to compiler research and implementation.
 
-LLVM officially acknowledges more than 10 main sub-projects [20], which range in diversity from a debugger [9] to a symbolic execution tool [8]. In addition to these, the official
-website presents a long list of miscellaneous projects that are based on components of
-the LLVM infrastructure [19].
-
-All projects which are part of the LLVM ecosystem are built upon the core libraries, which
-are arguably the centrepiece of LLVM. They host the source- and target-independent
-optimizer (Section 3.3), the implementation of the LLVM intermediate representation
-(Section 3.2), and a suite of command-line tools useful for code manipulation (Section 3.4).
-The core libraries also implement various back-end passes that translate IR to machine
-code for different platforms (x86, PowerPC, Nvidia GPUs).
-For building a complete compiler for a source language, the LLVM core libraries readily
-provide the optimizing pass and code generation for common architectures, the frontend being the only missing component. Clang is by far the most prominent front-end
-implemented in LLVM [5], and it targets the family of C languages (C/C++ and Objective-C/C++). Coupled with the core libraries, Clang is a powerful compiler
-producing high-performance code, and positions itself as a direct competitor to both gcc
-and the Intel compiler.
 
