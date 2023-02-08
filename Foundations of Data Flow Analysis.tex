@@ -564,8 +564,21 @@ extended Kildall's results to show that, given monotonic dataflow functions:
 
 \subsection{Speed of convergence}
 
-Preorder means visit parents before children, it isalso called \textbf{reverse postorder(RPO)} . Postorder means visit children before parent.
-RPO visits as many predecessors possible before visiting a node so in case of forward data flow problems (like Dominator computation) this would help to converge faster (as shown in Algorithm \ref{alg:Reverse Postorder}).
+Reverse postorder is a typical iteration order for forward data-flow problems. 
+In reverse-postorder(RPO) iteration, a node is visited before any of its successor nodes has been visited, 
+except when the successor is reached by a back edge. (Note that this is not the same as preorder.). RPO can 
+significantly reduce the number of iterations.
+
+
+Preorder means visiting parents before children, also called reverse postorder
+Postorder means visiting children before paren. (Parent relation does not consider b)
+
+In fact, it is not always the case that reverse postorder is equal to reverse DFS. 
+For \textbf{forward problem (e.g., AVAIL)}, a node needs the info of its predecessors.
+so we perform preorder on CFG.
+For \textbf{backward problem (e.g., LIVEOUT)},
+a node needs the info of its successors, so we perfoem postorde . 
+
 
 
 
@@ -608,6 +621,54 @@ RPO visits as many predecessors possible before visiting a node so in case of fo
 		\EndWhile
 	\end{algorithmic}
 \end{algorithm}
+
+
+
+Let's take the live variables(a backward problem) for example. The CFG is shown in
+Figure \ref{fig:p231}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{p231.png}
+    \caption{An example}
+    \label{fig:p231}
+\end{figure}
+
+
+
+If we traverse the node in the order 
+$B_0, B_1, B_3, B_5, B_4, B_6,B_2,B_7$
+, we may need 5 iterations shown in Figure \ref{fig:p232}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{p232.png}
+    \caption{Iterations for calculating LiveOut in Preorder}
+    \label{fig:p232}
+\end{figure}
+
+
+
+
+But if we traverse in postorde shown in Figure \ref{fig:p233}, that is $B_7, B_2, B_6,B_4,B_5,B_3,B_1,B_0$,
+we may need just 3 iterations shown in Figure\ref{fig:p234}.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{p233.png}
+    \caption{Postorder for CFG in Figure \ref{fig:p231}}
+    \label{fig:p233}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{p234.png}
+    \caption{Iterations for calculating LiveOut in Postorder}
+    \label{fig:p234}
+\end{figure}
 
 
 The number of passes are determined by number of back edges in the path essentially the nesting depth of the graph
