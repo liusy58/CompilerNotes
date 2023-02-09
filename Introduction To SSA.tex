@@ -65,7 +65,7 @@ Unfortunately, it is expensive to use UD and DU chains, because if we have $N$ d
 
 	At a basic block with p predecessors, there are p arguments to the $\Phi$ functions.
 
-	$$ x_{\text {new }} \leftarrow \Phi\left(\mathbf{x}_1, \mathbf{x}_1, \mathbf{x}_1, \ldots, \mathbf{x}_{\mathrm{p}}\right)
+	$$ x_{\text {new }} \leftarrow \Phi\left(\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3, \ldots, \mathbf{x}_{\mathrm{p}}\right)
 	$$
 \end{definition}
 
@@ -79,13 +79,13 @@ Unfortunately, it is expensive to use UD and DU chains, because if we have $N$ d
 \textbf{ \large \textit{Simplify some algorithms}} Uses and defs of variables in SSA form relate in a useful way to the dominator structure of the control-flow graph, which simplifies algorithms such as interference-graph construction.
 
 
-\textbf{ \large \textit{Eliminate needless relationship}} Unrelated uses of the same variable in the source program become different variables in SSA form, eliminating needless relationships shown in \ref{exp:1}.
+\textbf{ \large \textit{Eliminate needless relationship}} Unrelated uses of the same variable in the source program become different variables in SSA form, eliminating needless relationships shown in Listing\ref{exp:1}.
 
-\begin{lstlisting}[label={exp:1},caption={}]
-for i <- 1 to N 
-	do A[i] <- 0
-for i <- 1 to M 
-	do s <- s + B[i]
+\begin{lstlisting}[label={exp:1},caption={No reason why both loops should be forced to use same register to hold index
+	register. SSA renames second i to a new temporary which may lead to better register
+	allocation/optimization.}]
+for i <- 1 to N  do A[i] <- 0
+for i <- 1 to M  do s <- s + B[i]
 \end{lstlisting}
 
 
@@ -167,6 +167,37 @@ The algorithm for converting a program to SSA form is roughly as follows:
 
 
 
+The challenge to covert CFG to SSA is where to insert $\Phi$-functions so that every use has exactly one def.
+Once this property has been achieved, the resulting webs can be renamed (e.g., by adding subscripts to
+their variable name) accordingly.
+
+A simple-minded approach is just to insert $\Phi$-functions for every variable at the head of every basic
+block with more than one predecessor. But this creates a more complex CFG than necessary, with extra
+variables that slow down optimization.
+
+When does basic block \texttt{z} truly need to have the $\Phi$-function for a variable a; that is, inserting a = $\Phi$(a, a)
+at its beginning? This question can be answered using the path convergence criterion: the $\Phi$(a, a) is needed
+when:
+
+
+\begin{itemize}
+\item There exist two nodes \texttt{x} and \texttt{y} that define variable a.
+\item There are nonempty paths from x and y to z that are disjoint except at the final z node. Along these
+two paths, a is defined only at x and y.
+\end{itemize}
+
+
+This rule implies that \texttt{z} must be a node with multiple predecessors, because otherwise two paths would
+have to share the single predecessor and therefore would not be disjoint. It similarly implies that \texttt{z} can also
+appear in the middle of one of the paths from \texttt{x} and \texttt{y} to \texttt{z}, but cannot be in the middle of both.
+Note that for evaluating the path convergence criterion, we consider the start node of the CFG to implicitly define every variable, 
+representing its initial value (initialized or uninitialized) on entry.
+
+Although path convergence gives us a clear criterion for when to insert a $\Phi$-function, it is expensive to
+evaluate directly. SSA conversion is therefore usually done using a dominator analysis.
+
+
+
 \subsubsection{Trivial SSA}
 
 Trivial SSA form is based on a simple observation: $\Phi$ functions are only needed for variables that are "live" after the $\Phi$ function.
@@ -191,7 +222,7 @@ So a $\Phi$-function is not needed for every variable at each point.
 
 
 \subsubsection{Minimal SSA}
-Minimal SSA is an updated version compared to trivial SSA.
+Minimal SSA is an updated version compared to trivial SSA. This means:
 
 \begin{itemize}
 	\item Each assignment generates a fresh variable.
@@ -200,18 +231,106 @@ Minimal SSA is an updated version compared to trivial SSA.
 
 \subsubsection{Path-convergence criterion}
 
-There should be a $\Phi$-function for variable a at node z of the flow graph
+There should be a $\Phi$-function for variable b at node z of the flow graph
 exactly when all of the following are true:
 
 \begin{itemize}
-	\item 1. There is a block x containing a definition of a,
-	\item 2. There is a block y (with $y \neq x$) containing a definition of a,
-	\item 3. There is a nonempty path $P_{xz}$ of edges from x to z,
-	\item 4. There is a nonempty path $P_{yz}$ of edges from y to z,
-	\item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z, and
+	\item 1. There is a block x containing a definition of b shown in Figure\ref{fig:p235},
+	\item 2. There is a block y (with $y \neq x$) containing a definition of b shown in Figure\ref{fig:p236},
+	\item 3. There is a nonempty path $P_{xz}$ of edges from x to z shown in Figure\ref{fig:p237},
+	\item 4. There is a nonempty path $P_{yz}$ of edges from y to z shown in Figure\ref{fig:p238},
+	\item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z  shown in Figure\ref{fig:p239}, and
 	\item 6. The node z does not appear within both $P_{xz}$ and $P_{yz}$ prior to the
-	      end, though it may appear in one or the other.
+	      end, though it may appear in one or the other shown in Figure\ref{fig:p240}.
 \end{itemize}
+
+
+Show that the phrase “though it may appear in one or the other” in the last statement is necessary
+
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p235.png}
+% 	\caption{}
+% 	\label{fig:p235}
+% \end{figure}
+
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p236.png}
+% 	\caption{}
+% 	\label{fig:p236}
+% \end{figure}
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p237.png}
+% 	\caption{}
+% 	\label{fig:p237}
+% \end{figure}
+
+
+
+\begin{figure}[H]
+	\minipage{0.32\textwidth}
+	  \includegraphics[width=\linewidth]{p235.png}
+	  \caption{}\label{fig:p235}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}
+	  \includegraphics[width=\linewidth]{p236.png}
+	  \caption{}\label{fig:p236}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}%
+	  \includegraphics[width=\linewidth]{p237.png}
+	  \caption{}\label{fig:p237}
+	\endminipage
+\end{figure}
+
+
+
+
+\begin{figure}[H]
+	\minipage{0.32\textwidth}
+	  \includegraphics[width=\linewidth]{p238.png}
+	  \caption{}\label{fig:p238}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}
+	  \includegraphics[width=\linewidth]{p239.png}
+	  \caption{}\label{fig:p239}
+	\endminipage\hfill
+	\minipage{0.32\textwidth}%
+	  \includegraphics[width=\linewidth]{p240.png}
+	  \caption{}\label{fig:p240}
+	\endminipage
+\end{figure}
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p238.png}
+% 	\caption{}
+% 	\label{fig:p238}
+% \end{figure}
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p239.png}
+% 	\caption{}
+% 	\label{fig:p239}
+% \end{figure}
+
+
+% \begin{figure}[H]
+% 	\centering
+% 	\includegraphics[width=0.3\textwidth]{p240.png}
+% 	\caption{}
+% 	\label{fig:p240}
+% \end{figure}
 
 
 We consider the start node to contain an implicit definition of every variable, either because the variable may be a formal parameter or to represent the notion of a
