@@ -235,13 +235,13 @@ There should be a $\Phi$-function for variable b at node z of the flow graph
 exactly when all of the following are true:
 
 \begin{itemize}
-	\item 1. There is a block x containing a definition of b shown in Figure\ref{fig:p235},
-	\item 2. There is a block y (with $y \neq x$) containing a definition of b shown in Figure\ref{fig:p236},
-	\item 3. There is a nonempty path $P_{xz}$ of edges from x to z shown in Figure\ref{fig:p237},
-	\item 4. There is a nonempty path $P_{yz}$ of edges from y to z shown in Figure\ref{fig:p238},
-	\item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z  shown in Figure\ref{fig:p239}, and
+	\item 1. There is a block x containing a definition of b shown in Figure \ref{fig:p235},
+	\item 2. There is a block y (with $y \neq x$) containing a definition of b shown in Figure \ref{fig:p236},
+	\item 3. There is a nonempty path $P_{xz}$ of edges from x to z shown in Figure \ref{fig:p237},
+	\item 4. There is a nonempty path $P_{yz}$ of edges from y to z shown in Figure \ref{fig:p238},
+	\item 5. Paths $P_{xz}$ and $P_{yz}$ do not have any node in common other than z  shown in Figure \ref{fig:p239}, and
 	\item 6. The node z does not appear within both $P_{xz}$ and $P_{yz}$ prior to the
-	      end, though it may appear in one or the other shown in Figure\ref{fig:p240}.
+	      end, though it may appear in one or the other shown in Figure \ref{fig:p240}.
 \end{itemize}
 
 
@@ -485,7 +485,7 @@ This algorithm is quite efficient. It does work proportional to the size (number
 
 Starting with a program not in SSA form, we need to insert just enough $\Phi$-functions to satisfy the iterated dominance frontier criterion. To avoid re-examining nodes where no $\Phi$-function has been inserted, we use a work-list algorithm.
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Place-$\Phi$-Functions}\label{alg:Place-Phi-Functions}
 	\begin{algorithmic}
 		\For{each node n}
@@ -532,7 +532,7 @@ After the $\Phi$-functions are placed, we can walk the dominator tree, renaming 
 
 
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Renaming variables.}\label{alg:Renaming variables}
 	\begin{algorithmic}
 		\State Initialization:
@@ -543,7 +543,7 @@ After the $\Phi$-functions are placed, we can walk the dominator tree, renaming 
 		\State{push 0 onto Stack[a]}
 		\EndFor
 
-		\State{Rename(n) }
+		\Function{Rename(n) }{}
 		\For{each statement S in block n}
 		\If{S is not a $\Phi$-function}
 		\For{each use of some variable x in S}
@@ -575,6 +575,7 @@ After the $\Phi$-functions are placed, we can walk the dominator tree, renaming 
 		\For{each definition of some variable a in the original S}
 		\State pop Stack[a]
 		\EndFor
+		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
 

@@ -124,7 +124,7 @@ at cycle 0, the list scheduler places operations into the schedule cycle by cycl
 at cycle X (i.e. all its operands have been computed), is a candidate to be scheduled at cycle X. The priorities
 computed in the previous step are used to determine which ready operation to schedule, by selecting the
 highest priority operation first. Any tie in the priority of two operations is broken arbitrarily. The algorithm
-is detailed in Figure\ref{fig:p170}. Through the rest of the paper we refer to this algorithm as ls.
+is detailed in Figure \ref{fig:p170}. Through the rest of the paper we refer to this algorithm as ls.
 
 
 \begin{figure}[H]
@@ -146,7 +146,7 @@ techniques see . A machine learning approach to scheduling has been developed by
 
 A traditional list scheduler returns a single solution by breaking any ties in the priority of two or more
 operations arbitrarily. By running the list scheduler several times and breaking ties randomly, we could
-potentially generate more and better solutions. Figure\ref{fig:p171} is an example from the tomcatv benchmark. Assume
+potentially generate more and better solutions. Figure \ref{fig:p171} is an example from the tomcatv benchmark. Assume
 all load immediates (LDI) take one cycle, all add operations (ADD) take two cycles, and the copy (i2i) takes
 one cycle. Assume we are scheduling on a machine with two identical functional units. The numbers next
 to the operations are the priority values that list scheduling uses. In this figure we see two different list
@@ -191,7 +191,7 @@ problem of instruction scheduling in a compiler. This algorithm comes from the A
 Kernighan\cite{lin1973effective}, and Zweben, et. al.\cite{zweben1992scheduling,zweben1992learning}. The technique has shown promise for several
 scheduling problems including space shuttle mission scheduling.
 
-The generalized algorithm is presented in figure\ref{fig:p173}. The idea is straightforward. First, create an instruction
+The generalized algorithm is presented in Figure \ref{fig:p173}. The idea is straightforward. First, create an instruction
 schedule that begins each operation as early as possible with respect to the precedence constraints of the dpg,
 but ignores the resource constraints imposed by the limited number of processing elements. Now “repair” the
 schedule by moving operations that have a resource conflict to a point later in the schedule. This reduces the
