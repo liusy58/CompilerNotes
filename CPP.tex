@@ -37,9 +37,25 @@
 
 
 
+\subsection{How the C++ Linker Works?}
+The code shown in Lstlisting \ref{CPP:1} is \verb|mian.cc|, when we enter the command \verb|clang++  main.cc|, we got the error {\color{red}\verb|undefined reference to `log(char const*)'|}
+Why do we get link error even if we don't use \verb|multiple| at all? This is becuase \verb|multiple| can be used in other files other than this file. 
+We can make \verb|multiple| function only shown to this function by adding \verb|static| to its declaration.
 
+% becuase multiple can be used in other files other than this file. We can make `multiple` function only shown to this function by adding `static` to its declaration.
 
-
+\begin{lstlisting}[label={CPP:1},caption={main.cc}]
+	#include <iostream>
+	using namespace std;
+	void log(const char* msg);
+	int multiple(int a, int b){
+		log("multiple");
+		return a*b;
+	}
+	int main(){
+	
+	}
+\end{lstlisting}
 
 
 

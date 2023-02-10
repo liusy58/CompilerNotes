@@ -8,7 +8,8 @@ Many dataflow analysis need to find the use-sites of each defined variable or th
  The \textit{def-use chain} is a data structure that makes this efficient: for each statement in the flow graph,
   the compiler can keep a list of pointers to all the use sites of variables defined there, and a list of pointers 
   to all definition sites of the variables used there. An improvement on the idea of \textit{def-use chains}
-   is \textit{static single-assignment form}, or \textit{SSA form}, an intermediate representation in which each variable has only one definition in the program text. SSA is very useful for many optimizations such as Loop-Invariant Code Motion and Copy Propagation.
+   is \textit{static single-assignment form}, or \textit{SSA form},\footnote{In SSA, each temporary has only one definition in program, for each use u
+   of r, only one definition of r reaches u.} an intermediate representation in which each variable has only one definition in the program text. SSA is very useful for many optimizations such as Loop-Invariant Code Motion and Copy Propagation.
 
 % \subsection{Motivation}
 
@@ -334,7 +335,8 @@ Show that the phrase “though it may appear in one or the other” in the last 
 
 
 We consider the start node to contain an implicit definition of every variable, either because the variable may be a formal parameter or to represent the notion of a
-$\leftarrow$ uninitialized without special cases. A $\Phi$-function itself counts as a definition of a, so the path-convergence criterion must be considered as a set of equations to be satisfied. As usual, we can solve them by iteration as shown in \ref{alg:Iterated path-convergence criterion}.
+$\leftarrow$ uninitialized without special cases. A $\Phi$-function itself counts as a definition of a, so the path-convergence criterion must be considered as a set of equations to be satisfied. 
+As usual, we can solve them by iteration as shown in Algorithm \ref{alg:Iterated path-convergence criterion}.
 
 
 \begin{algorithm}
