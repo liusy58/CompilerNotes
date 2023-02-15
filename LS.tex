@@ -3,6 +3,31 @@
 
 \section{List Scheduling}
 
+
+We talk about what we called
+machine-independent optimizations in previous chapters. So for example, things like
+partial redunancy elimation, dead-code elimation, consant propagation and
+folding. These are things that are good for improving code, no matter
+what machine you're running on. It's always good to eliminate work
+from the code. But now we are talking about machine-dependent optimazations.
+These are optimizations where you need to know a little bit information
+about the machine you're targeting. The goal of the machine-independent
+optimizations is simply to eliminate work. For a register allocation, the point
+is to make it less expensive to access data. It's much cheaper to use data in
+registers than having to go to memory on the stack all the time.
+
+What's the point of instruction scheduling? With instruction `scheduling,
+we aren't getting rid of work. We assume that the earlier optimazation passes have
+already eliminated as much work as possible, but instead our goal is to take that
+fixed amount of work that we have and to perform it faster. And how is that possible
+the basic answer for how this happens is that we want to execute things in parallel.
+If we want to scrunch the same amount of work into less time that means essentially
+overlapping things. Let's say there's a sequence of instructions that we're assigning
+values to a b and c. With instruction scheduling, we're hoping to we still have to do all
+all of this work, but we can do all the work simultaneously, then that would allow
+us to get our answer faster.
+
+
 Instruction scheduling\cite{cooper1998experimental} plays a critical role in determining the performance of compiled code on today’s
 computers. Today’s microprocessors rely on the compiler to hide memory latencies and to keep functional
 units busy—both are tasks for the instruction scheduler. On the microprocessors of tomorrow, the quality
@@ -10,26 +35,66 @@ of instruction scheduling may be more important, since these machines will featu
 and more functional units. List scheduling is the most widely used technique for instruction scheduling.
 
 
-Before scheduling, the compiler applies a series of optimizations to the iloc code. This includes pointer
-analysis, dead code elimination, global value numbering, lazy code motion, constant propagation, strength
-reduction, register coalescing, dead code elimination, and empty block removal. For the purposes of this
-paper, no register allocation was performed; this eliminates interactions between allocation and scheduling
-and isolates the impact of scheduling.
+% Before scheduling, the compiler applies a series of optimizations to the  code. This includes pointer
+% analysis, dead code elimination, global value numbering, lazy code motion, constant propagation, strength
+% reduction, register coalescing, dead code elimination, and empty block removal. 
+% After optimization, the compiler passes the code to the scheduler. Each block is scheduled individually.
+% The first step constructs a data-precedence graph (DPG) for the block. The DPG $G = (N, E, E^\prime)$ has a node
+%  $n \in N$  for each operation. Edges $e = (n_i, n_j) \in E$ represent dependences between operations; their direction
+% matches the flow of values. Edges in $E^\prime$ represent anti-dependences in the code that prevent reordering. An
+% anti-edge $e = (n_i, n_j) \in E^\prime$
+% indicates that moving $n_j$ before $n_i$ would change the flow of values because of
+% a name that $n_i$ uses and $n_j$ redefines. The details of the individual schedulers vary.
 
-After optimization, the compiler passes the code to the scheduler. Each block is scheduled individually.
-The first step constructs a data-precedence graph (DPG) for the block. The DPG $G = (N, E, E^\prime)$ has a node
- $n \in N$  for each operation. Edges $e = (n_i, n_j) \in E$ represent dependences between operations; their direction
-matches the flow of values. Edges in $E^\prime$ represent anti-dependences in the code that prevent reordering. An
-anti-edge $e = (n_i, n_j) \in E^\prime$
-indicates that moving $n_j$ before $n_i$ would change the flow of values because of
-a name that $n_i$ uses and $n_j$ redefines. The details of the individual schedulers vary.
 
-To evaluate the schedules, we use several variations on a simple processor model. Each architecture
-consists of k identical pipelined functional units. Each functional unit can execute any iloc operation. For
-our experiments, we vary k between one and three. Each iloc operation has a latency—the number of cycles
-required before its results are available. Register values are read in the cycle when the instruction begins
-execution, and results are defined in the last cycle of its latency. Thus, an operation u can begin execution
-when all operations $v |(v, u) \in E$ have completed, and all operations $w |(u, w) \in E^\prime$ have already been issued.
+\subsection{Basic Block Scheduling}
+
+
+Current RISC processors achieve their high performance by exploiting parallelism through
+pipelining and multiple execution units. As a consequence, the results of previous instructions
+are sometimes not available when the next instruction is executed. If the next
+instruction needs the result, it has to wait. The problem of arranging the instructions
+in a way that reduces the number of wait cycles is known as instruction scheduling or
+instruction reordering. Microcode compaction is a related problem.
+
+Instruction scheduling can have a drastic impact on performance: On the Motorola
+88100 one floating point multiplication can be started at every cycle, but the result is only
+available after six cycles. Even a simple formulation of optimal instruction scheduling
+is an NP-complete search problem . Scheduling is further complicated by the
+interactions between the execution units. E.g., on the Motorola 88100 only one result at
+a time can be written back to the register file. Since up to three execution units may want
+to write a result, the scheduler must also consider the priority scheme implemented in the
+hardware. Scheduling is even more important for the superscalar and VLIW processors
+ which can execute multiple instructions per cycle.
+
+ The existing algorithms shown in Figure \ref{alg:Basic Block Scheduling} make use of an explicit dependency graph. The scheduler
+ determines the path length, heuristically selects one of the instructions having 
+ no predecessor, appends it to the instruction sequence, and removes it from the graph. The usual
+ heuristic procedure chooses the instruction with the longest path length.
+
+ \begin{algorithm}
+	\caption{Basic Block Scheduling}\label{alg:Basic Block Scheduling}
+	\begin{algorithmic}
+		\State{READY = nodes with 0 predecessors}
+
+        \While{READY is empty}
+        \State{Let {\color{blue}n} be the node in READY with {\color{red}highest priority}}
+        \State{Schedule {\color{blue}n} in the earliest slot
+        that {\color{blue}satisfies precedence + resource constraints}}
+        \State{Update predecessor count of n’s successor nodes}
+        \State{Update READY}
+        \EndWhile
+	\end{algorithmic}
+\end{algorithm}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{p242.png}
+	\caption{Basic Block Scheduling Example}
+	\label{fig:p242}
+\end{figure}
+
 
 
 
@@ -45,51 +110,51 @@ A Flow dependency, also known as a data dependency or true dependency or read-af
 
 
 \begin{center}
-1. A = 3\\
-2. B = A\\
-3. C = B
+	1. A = 3\\
+	2. B = A\\
+	3. C = B
 \end{center}
 Instruction 3 is truly dependent on instruction 2, as the final value of C depends on the instruction updating B. Instruction 2 is truly dependent on instruction 1, as the final value of B depends on the instruction updating A. Since instruction 3 is truly dependent upon instruction 2 and instruction 2 is truly dependent on instruction 1, instruction 3 is also truly dependent on instruction 1. Instruction level parallelism is therefore not an option in this example.
 
 \subsubsection{Anti-dependency}
 An anti-dependency, also known as write-after-read (WAR), occurs when an instruction requires a value that is later updated. In the following example, instruction 2 anti-depends on instruction 3 — the ordering of these instructions cannot be changed, nor can they be executed in parallel (possibly changing the instruction ordering), as this would affect the final value of A.
 \begin{center}
-    1. B = 3 \\
-    2. A = B + 1 \\
-    3. B = 7
-    \end{center}
+	1. B = 3 \\
+	2. A = B + 1 \\
+	3. B = 7
+\end{center}
 
 Example :
 \begin{center}
-    MUL R3,R1,R2 \\
-    ADD R2,R5,R6
-    \end{center}
-    It is clear that there is anti-dependence between these 2 instructions. At first we read R2 then in second instruction we are Writing a new value for it.
+	MUL R3,R1,R2 \\
+	ADD R2,R5,R6
+\end{center}
+It is clear that there is anti-dependence between these 2 instructions. At first we read R2 then in second instruction we are Writing a new value for it.
 
-    An anti-dependency is an example of a name dependency. That is, renaming of variables could remove the dependency, as in the next example:
-    \begin{center}
-        1. B = 3 \\ 
-        N. B2 = B \\
-        2. A = B2 + 1 \\
-        3. B = 7
-        \end{center}
-    A new variable, B2, has been declared as a copy of B in a new instruction, instruction N. The anti-dependency between 2 and 3 has been removed, meaning that these instructions may now be executed in parallel. However, the modification has introduced a new dependency: instruction 2 is now truly dependent on instruction N, which is truly dependent upon instruction 1. As flow dependencies, these new dependencies are impossible to safely remove. 
+An anti-dependency is an example of a name dependency. That is, renaming of variables could remove the dependency, as in the next example:
+\begin{center}
+	1. B = 3 \\
+	N. B2 = B \\
+	2. A = B2 + 1 \\
+	3. B = 7
+\end{center}
+A new variable, B2, has been declared as a copy of B in a new instruction, instruction N. The anti-dependency between 2 and 3 has been removed, meaning that these instructions may now be executed in parallel. However, the modification has introduced a new dependency: instruction 2 is now truly dependent on instruction N, which is truly dependent upon instruction 1. As flow dependencies, these new dependencies are impossible to safely remove.
 
 \subsubsection{Output dependency}
 
 An output dependency, also known as write-after-write (WAW), occurs when the ordering of instructions will affect the final output value of a variable. In the example below, there is an output dependency between instructions 3 and 1 — changing the ordering of instructions in this example will change the final value of A, thus these instructions cannot be executed in parallel.
 
 \begin{center}
-    1. B = 3 \\ 
-    2. A = B + 1 \\
-    3. B = 7
-    \end{center}
+	1. B = 3 \\
+	2. A = B + 1 \\
+	3. B = 7
+\end{center}
 As with anti-dependencies, output dependencies are name dependencies. That is, they may be removed through renaming of variables, as in the below modification of the above example:
 
 \begin{center}
-    1. B2 = 3 \\
-    2. A = B2 + 1 \\
-    3. B = 7
+	1. B2 = 3 \\
+	2. A = B2 + 1 \\
+	3. B = 7
 \end{center}
 
 
@@ -106,18 +171,18 @@ along the path are weighted using the latency of the operation the node represen
 summarizes the priority computation for a node n:
 
 $$
-\operatorname{priority}(n)=\max \left(\forall_{l \in \text { leaves }(D P G)} \forall_{p \in \operatorname{paths}(n, \ldots, l)} \sum_{p_i=n}^l \text { latency }\left(p_i\right)\right)
+	\operatorname{priority}(n)=\max \left(\forall_{l \in \text { leaves }(D P G)} \forall_{p \in \operatorname{paths}(n, \ldots, l)} \sum_{p_i=n}^l \text { latency }\left(p_i\right)\right)
 $$
 
 Dynamic programming can be used to compute the priorities efficiently, and we take into consideration
 the anti-edges described above:
 
 $$
-\operatorname{priority}(n)=\left\{\begin{array}{cc}
-\operatorname{latency}(n) & \text { if } n \text { is a leaf. } \\
-\max \left(\operatorname{latency}(n)+\max _{(m, n) \in E}(\text { priority }(m)),\right. & \\
-\left.\max _{(m, n) \in E^{\prime}}(\text { priority }(m))\right) & \text { otherwise. }
-\end{array}\right.
+	\operatorname{priority}(n)=\left\{\begin{array}{cc}
+		\operatorname{latency}(n)                                                                & \text { if } n \text { is a leaf. } \\
+		\max \left(\operatorname{latency}(n)+\max _{(m, n) \in E}(\text { priority }(m)),\right. &                                     \\
+		\left.\max _{(m, n) \in E^{\prime}}(\text { priority }(m))\right)                        & \text { otherwise. }
+	\end{array}\right.
 $$
 The final phase is the actual list scheduling algorithm that constructs the schedule for the block. Starting
 at cycle 0, the list scheduler places operations into the schedule cycle by cycle. Any operation that is “ready”
@@ -187,7 +252,7 @@ scheduler as shown in the example.
 
 
 Here we introduce the application of a repair based scheduling technique called “iterative repair” to the
-problem of instruction scheduling in a compiler. This algorithm comes from the AI community and is described by Lin and 
+problem of instruction scheduling in a compiler. This algorithm comes from the AI community and is described by Lin and
 Kernighan\cite{lin1973effective}, and Zweben, et. al.\cite{zweben1992scheduling,zweben1992learning}. The technique has shown promise for several
 scheduling problems including space shuttle mission scheduling.
 
@@ -215,7 +280,7 @@ as early-as-possible with respect to this new start time. This could cause addit
 later in the schedule, but a future repair will correct any new conflicts. After each repair we compare the
 length of the new schedule to that of the old schedule. If the new length is greater, the repair is ignored,
 the state of the previous schedule is restored, and a new move-node is selected. A new schedule with a
-greater length than the previous schedule is kept ten per cent of the time to avoid local minima. 
+greater length than the previous schedule is kept ten per cent of the time to avoid local minima.
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{p173.png}

@@ -298,3 +298,7 @@ slides/**
 !main.pdf
 cmu15745/**
 !words.txt
+
+hw**
+**.zip
+**.html

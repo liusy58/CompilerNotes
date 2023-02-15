@@ -1,17 +1,16 @@
 \section{Instruction Scheduling}
 \subsection{Introduction}
-We spent the early part of this class talking about what we called
-machine-independent optimizations. So for example, things like
+We talk about what we called
+machine-independent optimizations in previous chapters. So for example, things like
 partial redunancy elimation, dead-code elimation, consant propagation and 
 folding. These are things that are good for improving code, no matter
 what machine you're running on. It's always good to eliminate work
 from the code. But now we are talking about machine-dependent optimazations.
 These are optimizations where you need to know a little bit information
-about th machine you're targeting. The goal of the machine-independent
+about the machine you're targeting. The goal of the machine-independent
 optimizations is simply to eliminate work. For a register allocation, the point
 is to make it less expensive to access data. It's much cheaper to use data in 
-registers than having to go to memory on the stack all the time. So today we are going to 
-talk about Instruction Scheduling. 
+registers than having to go to memory on the stack all the time. 
 
 What's the point of instruction scheduling? With instruction scheduling, 
 we aren't getting rid of work. We assume that the earlier optimazation passes have 

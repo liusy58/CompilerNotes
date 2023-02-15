@@ -129,7 +129,7 @@ Of these edges, only retreating edges go from high to low in DF order.
 
 \begin{itemize}
     \item Perform a depth first search
-    \item For each retreating edge \(t \rightarrow h\), check if h is in t$^\prime$s dominator list
+    \item For each retreating edge \(t \rightarrow h\), check if h is in t$^\prime$s dominator list. If so,  \(t \rightarrow h\) is a back edge.
 \end{itemize}
 
 
@@ -177,7 +177,7 @@ Of these edges, only retreating edges go from high to low in DF order.
 \subsection{Inner Loops}
 
 If two different loops don't have ths same header, they are either disjoint or one is entirely contained the other (inner loop is the one that contains no other loop.).
-If two loops share the same header shown in ref{fig:p65}, it is hard to tell which is the inner loop. But we can combine and treat as one loop.
+If two loops share the same header shown in Figure \ref{fig:p65}, it is hard to tell which is the inner loop. But we can combine and treat as one loop.
 
 
 \begin{figure}[H]
