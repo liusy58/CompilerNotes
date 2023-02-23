@@ -234,31 +234,31 @@ Reaching definitions is distributive but constant propogation is not.
 
 Before thinking about how to define a dataflow problem, note that there are two kinds of problems:
 \begin{itemize}
-\item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n.
-\item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit".
+	\item Forward problems (like constant propagation) where the information at a node n summarizes what can happen on paths from "enter" to n.
+	\item Backward problems (like live-variable analysis), where the information at a node n summarizes what can happen on paths from n to "exit".
 
 
-\end{itemize}	
+\end{itemize}
 In what follows, we will assume that we're thinking about a forward problem unless otherwise specified.
 
-Another way that many common dataflow problems can be categorized is as 
-may problems or must problems. The solution to a "may" problem provides 
-information about what may be true at each program point 
-(e.g., for live-variables analysis, a variable is considered live after 
-node n if its value may be used before being overwritten, 
+Another way that many common dataflow problems can be categorized is as
+may problems or must problems. The solution to a "may" problem provides
+information about what may be true at each program point
+(e.g., for live-variables analysis, a variable is considered live after
+node n if its value may be used before being overwritten,
 while for constant propagation, the pair (x, v) holds before node n if x
- must have the value v at that point).
+must have the value v at that point).
 
-Now let's think about how to define a dataflow problem so that it's 
-clear what the (best) solution should be. When we do dataflow analysis 
+Now let's think about how to define a dataflow problem so that it's
+clear what the (best) solution should be. When we do dataflow analysis
 "by hand", we look at the CFG and think about:
 
 \begin{itemize}
 	\item 	What information holds at the start of the program.
 	\item 	When a node n has more than one incoming edge in the CFG, how to combine the incoming information (i.e., given the information that holds after each predecessor of n, how to combine that information to determine what holds before n).
 	\item 	How the execution of each node changes the information.
-	
-\end{itemize}	
+
+\end{itemize}
 This intuition leads to the following definition. An instance of a dataflow problem includes:
 
 
@@ -268,8 +268,8 @@ This intuition leads to the following definition. An instance of a dataflow prob
 	\item a dataflow fact "init" (the information true at the start of the program for forward problems, or at the end of the program for backward problems),
 	\item an operator $\wedge$ (used to combine incoming information from multiple predecessors),
 	\item for each CFG node n, a dataflow function $f_n : D \rightarrow D$ (that defines the effect of executing n).
-			
-\end{itemize}	
+
+\end{itemize}
 
 For constant propagation, an individual dataflow fact is a set of pairs of the form (var, val), so the domain of dataflow facts is the set of all such sets of pairs (the power set). For live-variable analysis, it is the power set of the set of variables in the program.
 
@@ -279,28 +279,28 @@ For constant propagation, the combining operation $\wedge$ is set intersection. 
 
 For constant propagation, the dataflow function associated with a CFG node that does not assign to any variable (e.g., a predicate) is the identity function. For a node n that assigns to a variable x, there are two possibilities:
 \begin{itemize}
-\item The right-hand side has a variable that is not constant. In this case, the function result is the same as its input except that if variable x was constant the before n, it is not constant after n.
-\item All right-hand-side variables have constant values. In this case, the right-hand side of the assignment is evaluated producing consant-value c, and the dataflow-function result is the same as its input except that it includes the pair (x, c) for variable x (and excludes the pair for x, if any, that was in the input).
+	\item The right-hand side has a variable that is not constant. In this case, the function result is the same as its input except that if variable x was constant the before n, it is not constant after n.
+	\item All right-hand-side variables have constant values. In this case, the right-hand side of the assignment is evaluated producing consant-value c, and the dataflow-function result is the same as its input except that it includes the pair (x, c) for variable x (and excludes the pair for x, if any, that was in the input).
 
-\end{itemize}	
-For live-variable analysis, the dataflow function for each node n has 
+\end{itemize}
+For live-variable analysis, the dataflow function for each node n has
 the form: $f_n(S) = (S - KILL_n)  \cup  GEN_n$, where $KILL_n$
- is the set of variables defined at node n, and $GEN_n$ is the set 
- of variables used at node n. In other words, for a node
-  that does not assign to any variable, the variables that
-   are live before n are those that are live after n plus those 
-   that are used at n; for a node that assigns to variable x, the 
-   variables that are live before n are those that are live after 
-   n except x, plus those that are used at n (including x if it 
-   is used at n as well as being defined there).
+is the set of variables defined at node n, and $GEN_n$ is the set
+of variables used at node n. In other words, for a node
+that does not assign to any variable, the variables that
+are live before n are those that are live after n plus those
+that are used at n; for a node that assigns to variable x, the
+variables that are live before n are those that are live after
+n except x, plus those that are used at n (including x if it
+is used at n as well as being defined there).
 
 
-   
-It turns out that a number of interesting dataflow problems 
+
+It turns out that a number of interesting dataflow problems
 have dataflow functions of this same form, where $GEN_n$ and $KILL_n$
- are sets whose definition depends only on n, and the combining 
- operator $\wedge$ is either union or intersection. These problems 
- are called GEN/KILL problems, or bit-vector problems.
+are sets whose definition depends only on n, and the combining
+operator $\wedge$ is either union or intersection. These problems
+are called GEN/KILL problems, or bit-vector problems.
 
 \subsection{Meet-Over-Paths(MOP)\cite{DATAFLOW66:online}}
 
@@ -415,7 +415,7 @@ four solutions shown below (differing on those four values).
 
 $$
 	\begin{array}{|c|c|c|c|c|}
-		\hline \text { Variable }        & \text { Solution 1 } & \text { Solution 2 } & \text { Solution 3 } & \text { Solution 4 } \\
+		\hline \text { Variable }  & \text { Solution 1 } & \text { Solution 2 } & \text { Solution 3 } & \text { Solution 4 } \\
 		\hline  \text { 1.before } & \{\}                 & \{\}                 & \{\}                 & \{\}                 \\
 		\hline  \text { 1.after }  & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
 		\hline  \text { 2.before } & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           & \{(x, 2)\}           \\
@@ -564,20 +564,20 @@ extended Kildall's results to show that, given monotonic dataflow functions:
 
 \subsection{Speed of convergence}
 
-Reverse postorder is a typical iteration order for forward data-flow problems. 
-In reverse-postorder(RPO) iteration, a node is visited before any of its successor nodes has been visited, 
-except when the successor is reached by a back edge. (Note that this is not the same as preorder.). RPO can 
+Reverse postorder is a typical iteration order for forward data-flow problems.
+In reverse-postorder(RPO) iteration, a node is visited before any of its successor nodes has been visited,
+except when the successor is reached by a back edge. (Note that this is not the same as preorder.). RPO can
 significantly reduce the number of iterations.
 
 
 Preorder means visiting parents before children, also called reverse postorder
 Postorder means visiting children before paren. (Parent relation does not consider b)
 
-In fact, it is not always the case that reverse postorder is equal to reverse DFS. 
+In fact, it is not always the case that reverse postorder is equal to reverse DFS.
 For \textbf{forward problem (e.g., AVAIL)}, a node needs the info of its predecessors.
 so we perform preorder on CFG.
 For \textbf{backward problem (e.g., LIVEOUT)},
-a node needs the info of its successors, so we perfoem postorde . 
+a node needs the info of its successors, so we perfoem postorde .
 
 
 
@@ -629,23 +629,23 @@ Figure \ref{fig:p231}
 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{p231.png}
-    \caption{An example}
-    \label{fig:p231}
+	\centering
+	\includegraphics[width=0.7\textwidth]{p231.png}
+	\caption{An example}
+	\label{fig:p231}
 \end{figure}
 
 
 
-If we traverse the node in the order 
+If we traverse the node in the order
 $B_0, B_1, B_3, B_5, B_4, B_6,B_2,B_7$
 , we may need 5 iterations shown in Figure \ref{fig:p232}.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{p232.png}
-    \caption{Iterations for calculating LiveOut in Preorder}
-    \label{fig:p232}
+	\centering
+	\includegraphics[width=0.7\textwidth]{p232.png}
+	\caption{Iterations for calculating LiveOut in Preorder}
+	\label{fig:p232}
 \end{figure}
 
 
@@ -656,18 +656,18 @@ we may need just 3 iterations shown in Figure \ref{fig:p234}.
 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{p233.png}
-    \caption{Postorder for CFG in Figure \ref{fig:p231}}
-    \label{fig:p233}
+	\centering
+	\includegraphics[width=0.7\textwidth]{p233.png}
+	\caption{Postorder for CFG in Figure \ref{fig:p231}}
+	\label{fig:p233}
 \end{figure}
 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{p234.png}
-    \caption{Iterations for calculating LiveOut in Postorder}
-    \label{fig:p234}
+	\centering
+	\includegraphics[width=0.7\textwidth]{p234.png}
+	\caption{Iterations for calculating LiveOut in Postorder}
+	\label{fig:p234}
 \end{figure}
 
 
@@ -676,7 +676,7 @@ The number of passes are determined by number of back edges in the path essentia
 	\text{Number of iterations} = \text{number of back edges in any acyclic
 		path} + 2
 \]
-in	real	programs,	average	of	2.75	
+in	real	programs,	average	of	2.75
 
 
 \subsection{Summary}
@@ -691,3 +691,117 @@ Let's answer the questions we asked before.
 \end{itemize}
 
 
+
+
+\subsection{Exercises}
+
+
+\begin{problem}
+Indicate which of the following operator--domain pairs defines a semilattice. If so, also define the \textbf{top} ($\top$) and \textbf{bottom} ($\bot$) elements of the associated semilattice, if they exist. If not, justify your answer by listing at least one semilattice axiom that fails to hold.
+\begin{enumerate}
+	\item Set union over the power set of $\mathbb{Z}$
+	\item Set intersection over $\{\varnothing, \{1\}, \{2\}\}$
+	\item Set symmetric difference (i.e., $(A - B) \cup (B - A)$)\footnote{Set difference $A - B$ is defined as the set $\{v \mid v \in A \text{ and } v \not\in B\}$. It is sometimes also written as $A \setminus B$.} over the power set of $\mathbb{Z}$
+	\item Boolean \textsc{or} operator over boolean values $\{T, F\}$
+	\item The \textsc{lcm} (Least Common Multiple) function over $\mathbb{Z}^+$ (all positive integers)
+	\item The \textsc{gcd} (Greatest Common Divisor) function over $\{2,4,8\}$
+	\item Arithmetic mean ($\frac{a+b}{2}$) over $\mathbb{R}$
+\end{enumerate}
+
+\item Answer:
+\begin{enumerate}
+	\item {\color{red}Yes, $\top = \Phi$, $\bot = \mathbb{Z}$}
+	\item {\color{red}Yes, $\top$ does not exist and $\bot = \Phi$}
+	\item {\color{red}No,idempotence not satisfied, e.g. $x \wedge x = {} \neq x$ }
+	\item {\color{red}Yes, $\top = F$, $\bot = T$}
+	\item {\color{red}Yes, $\top = 1$, $\bot$ doesn't exist}
+	\item {\color{red}Yes, $\top = 8$, $\bot = 1$}
+	\item {\color{red}No, associativity not satisfied, $\frac{1 + \frac{2+3}{2}}{2} \neq \frac{\frac{1+2}{2} + 3}{2}$ }
+\end{enumerate}
+
+\end{problem}
+
+
+
+\begin{problem}
+True or False? Briefly justify your answer.
+\begin{enumerate}
+	\item A monotone framework is also a distributive framework.
+	\item If the semilattice of a dataflow framework has a finite domain, then the iterative algorithm must converge to some fixed point solution.
+	\item Every nonempty finite semilattice has a bottom element.
+	\item A semilattice can have multiple distinct top elements.
+	\item Suppose $f : S \to S$ and $g : S \to S$ are monotonic functions with respect to some partial order $\le$. Then $f \circ g$ is also monotonic (where $(f \circ g)(x) = f(g(x))$).
+	      Hint: a function $f : X \to Y$, $f$ is monotonic if and only if $\forall a, b \in X$, $a \le b$ implies $f(a) \le f(b)$.
+	\item Suppose we have a partial order defined by the subset ($\subseteq$) relation over the power set of $\mathbb{Z}$, $\mathcal{P}(\mathbb{Z})$. We define function $f : \mathcal{P}(\mathbb{Z}) \to \mathcal{P}(\mathbb{Z})$ as $f(S) = (S \cup \{3\}) - \{4\}$. $f$ is a monotonic function with respect to this partial order. \emph{Hint: Use your answer from the previous part.}
+\end{enumerate}
+
+\item Answer:
+\begin{enumerate}
+	\item {\color{red}False}
+	\item {\color{red}False. Using the iterative algorithm for dataflow analysis, convergence is only guaranteed with a monotone framework and finite descending chains.}
+	\item {\color{red}True.  Suppose the domain is $S$, let $\bot = \wedge_{x\in S}x$ . Then for all $y \in S$\\ $\begin{aligned} y \wedge \perp & =y \wedge\left(y \wedge \bigwedge_{x \in S, x \neq y} x\right) & & \text { (definition of } \perp \text { ) } \\ & =(y \wedge y) \wedge \bigwedge_{x \in S, x \neq y} x & & \text { (associativity) } \\ & =y \wedge \bigwedge_{x \in S, x \neq y} x & & \text { (idempotence) } \\ & =\perp . & & \text { (definition of } \perp \text { ) }\end{aligned}$}
+	\item {\color{red}False. Suppose we have distinct $\top 1$, $\top 2$. From the property of the top element,
+	      $\top 1$ $\wedge$ $\top 2$ = $\top 2$ and $\top 2$ $\wedge$ $\top 1$ = $\top 1$. Then from communitivity, we have $\top 1$ = $\top 2$ which
+	      leads to a contradiction}
+	\item {\color{red}True. }
+	\item {\color{red}True. True. Denote $g(x) = x\cup {3}$, $h(x) = x - {4}$. Then $f(x) = h(g(x))$. Since $g, h$ are both
+	      monotonic, $f(x)$ is also monotonic by conclusion from last question}
+\end{enumerate}
+
+\end{problem}
+
+
+\begin{problem}
+	Live Range Analysis.
+	
+	\item A path is \emph{definition-free} with respect to a variable $y$ if
+	there does not exist a definition of variable $y$ along that path.
+	The live range of a definition $d\colon y = x + z$ that defines variable $y$ includes all the program points $p$ such that:
+	\begin{enumerate}
+		\item There is a path from $d$ to $p$ that is definition-free with respect to $y$, and
+		\item There is a path from $p$ to $q$, a statement that uses (i.e., reads) the variable $y$, that is definition-free with respect to $y$.
+	\end{enumerate}
+	To clarify, for any statement $d$ within basic block $b$, there is no path from $d$ to $\mathrm{entry}(b)$ (unless $b$ participates in a cycle in the CFG), but there is a path from $d$ to $\mathrm{exit}(b)$.
+	
+	Intuitively, the live range of a definition consists of points along all subsequent paths until the variable defined is guaranteed never to be used before redefinition (or exit) along all paths. This concept is applicable to register allocation: two definitions can be assigned to the same register if their live ranges do not intersect.
+	
+	\begin{center}
+	\begin{tikzpicture}
+	\node[draw] (b0) {$a = x + y$};
+	\node[left=0.5em of b0] {$b_0$};
+	\node[draw, below left=1.4em and 0em of b0] (b1) {$z = 2 \times a$};
+	\node[left=0.5em of b1] {$b_1$};
+	\node[draw, below right=1.4em and 0em of b0] (b2) {$a = 0$};
+	\node[left=0.5em of b2] {$b_2$};
+	\node[draw, below=4.2em of b0] (b3) {$a = a + 1$};
+	\node[left=0.5em of b3] {$b_3$};
+	\node[draw, below=1.4em of b3] (b4) {$b = a + z$};
+	\node[left=0.5em of b4] {$b_4$};
+	\node[draw, below=1.4em of b4] (b5) {$\text{print}(b)$};
+	\node[left=0.5em of b5] {$b_5$};
+	\node[draw, below=1.4em of b5] (exit) {\textsc{exit}};
+	
+	\draw[->] (b0) -- (b1);
+	\draw[->] (b0) -- (b2);
+	\draw[->] (b1) -- (b3);
+	\draw[->] (b2) -- (b3);
+	\draw[->] (b3) -- (b4);
+	\draw[->] (b4) -- (b5);
+	\draw[->] (b5) -- (exit);
+	\end{tikzpicture}
+	\end{center}
+	In the above example, the live range of definition $b_0$ is $\mathrm{exit}(b_0)$,
+	$\mathrm{entry}(b_1)$, $\mathrm{exit}(b_1)$, and $\mathrm{entry}(b_3)$. Notably, $\mathrm{entry}(b_2)$ is \emph{not} part of the live range of definition $b_0$ (think of why this is the case). Similarly, the live range
+	of the definition $b_4$ is $\mathrm{exit}(b_4)$, $\mathrm{entry}(b_5)$. The two
+	live ranges do not intersect, so $b$ can reuse $a$'s register.
+	
+	Describe an analysis that computes the live range for each definition in a program. \emph{Hint: you may use algorithms discussed in class.}
+	
+	\item Answer: 
+	{\color{red}Informally, a program point p is in the live range of definition \texttt{d: x = ...} if (1) x is a live
+	variable at p, and (2) d is a reachable definition at p. This gives rise to the following algorithm.
+	First, run Reaching Definitions and Live Variables analyses on the program. Let $\mathrm{In}_\mathrm{RD}$ and
+	$\mathrm{Out}_\mathrm{RD}$ be the result of Reaching Definitions and let $\mathrm{In}_\mathrm{LV}$ and $\mathrm{Out}_\mathrm{LV}$ be the result of Live
+	Variables. Then for every definition \texttt{d: x = ...} , the live range of d can be computed as \\
+	$\begin{gathered}\left\{\operatorname{entry}(b) \mid x \in \mathrm{IN}_{\mathrm{LV}}[b] \wedge d \in \mathrm{IN}_{\mathrm{RD}}[b]\right\} \\ \cup \\ \left\{\operatorname{exit}(b) \mid x \in \mathrm{OUT}_{\mathrm{LV}}[b] \wedge d \in \mathrm{OUT}_{\mathrm{RD}}[b]\right\}\end{gathered}$}
+	\end{problem}
