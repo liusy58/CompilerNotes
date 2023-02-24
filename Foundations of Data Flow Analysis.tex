@@ -752,56 +752,161 @@ True or False? Briefly justify your answer.
 
 
 \begin{problem}
-	Live Range Analysis.
-	
-	\item A path is \emph{definition-free} with respect to a variable $y$ if
-	there does not exist a definition of variable $y$ along that path.
-	The live range of a definition $d\colon y = x + z$ that defines variable $y$ includes all the program points $p$ such that:
-	\begin{enumerate}
-		\item There is a path from $d$ to $p$ that is definition-free with respect to $y$, and
-		\item There is a path from $p$ to $q$, a statement that uses (i.e., reads) the variable $y$, that is definition-free with respect to $y$.
-	\end{enumerate}
-	To clarify, for any statement $d$ within basic block $b$, there is no path from $d$ to $\mathrm{entry}(b)$ (unless $b$ participates in a cycle in the CFG), but there is a path from $d$ to $\mathrm{exit}(b)$.
-	
-	Intuitively, the live range of a definition consists of points along all subsequent paths until the variable defined is guaranteed never to be used before redefinition (or exit) along all paths. This concept is applicable to register allocation: two definitions can be assigned to the same register if their live ranges do not intersect.
-	
-	\begin{center}
+Live Range Analysis.
+
+\item A path is \emph{definition-free} with respect to a variable $y$ if
+there does not exist a definition of variable $y$ along that path.
+The live range of a definition $d\colon y = x + z$ that defines variable $y$ includes all the program points $p$ such that:
+\begin{enumerate}
+	\item There is a path from $d$ to $p$ that is definition-free with respect to $y$, and
+	\item There is a path from $p$ to $q$, a statement that uses (i.e., reads) the variable $y$, that is definition-free with respect to $y$.
+\end{enumerate}
+To clarify, for any statement $d$ within basic block $b$, there is no path from $d$ to $\mathrm{entry}(b)$ (unless $b$ participates in a cycle in the CFG), but there is a path from $d$ to $\mathrm{exit}(b)$.
+
+Intuitively, the live range of a definition consists of points along all subsequent paths until the variable defined is guaranteed never to be used before redefinition (or exit) along all paths. This concept is applicable to register allocation: two definitions can be assigned to the same register if their live ranges do not intersect.
+
+\begin{center}
 	\begin{tikzpicture}
-	\node[draw] (b0) {$a = x + y$};
-	\node[left=0.5em of b0] {$b_0$};
-	\node[draw, below left=1.4em and 0em of b0] (b1) {$z = 2 \times a$};
-	\node[left=0.5em of b1] {$b_1$};
-	\node[draw, below right=1.4em and 0em of b0] (b2) {$a = 0$};
-	\node[left=0.5em of b2] {$b_2$};
-	\node[draw, below=4.2em of b0] (b3) {$a = a + 1$};
-	\node[left=0.5em of b3] {$b_3$};
-	\node[draw, below=1.4em of b3] (b4) {$b = a + z$};
-	\node[left=0.5em of b4] {$b_4$};
-	\node[draw, below=1.4em of b4] (b5) {$\text{print}(b)$};
-	\node[left=0.5em of b5] {$b_5$};
-	\node[draw, below=1.4em of b5] (exit) {\textsc{exit}};
-	
-	\draw[->] (b0) -- (b1);
-	\draw[->] (b0) -- (b2);
-	\draw[->] (b1) -- (b3);
-	\draw[->] (b2) -- (b3);
-	\draw[->] (b3) -- (b4);
-	\draw[->] (b4) -- (b5);
-	\draw[->] (b5) -- (exit);
+		\node[draw] (b0) {$a = x + y$};
+		\node[left=0.5em of b0] {$b_0$};
+		\node[draw, below left=1.4em and 0em of b0] (b1) {$z = 2 \times a$};
+		\node[left=0.5em of b1] {$b_1$};
+		\node[draw, below right=1.4em and 0em of b0] (b2) {$a = 0$};
+		\node[left=0.5em of b2] {$b_2$};
+		\node[draw, below=4.2em of b0] (b3) {$a = a + 1$};
+		\node[left=0.5em of b3] {$b_3$};
+		\node[draw, below=1.4em of b3] (b4) {$b = a + z$};
+		\node[left=0.5em of b4] {$b_4$};
+		\node[draw, below=1.4em of b4] (b5) {$\text{print}(b)$};
+		\node[left=0.5em of b5] {$b_5$};
+		\node[draw, below=1.4em of b5] (exit) {\textsc{exit}};
+
+		\draw[->] (b0) -- (b1);
+		\draw[->] (b0) -- (b2);
+		\draw[->] (b1) -- (b3);
+		\draw[->] (b2) -- (b3);
+		\draw[->] (b3) -- (b4);
+		\draw[->] (b4) -- (b5);
+		\draw[->] (b5) -- (exit);
 	\end{tikzpicture}
-	\end{center}
-	In the above example, the live range of definition $b_0$ is $\mathrm{exit}(b_0)$,
-	$\mathrm{entry}(b_1)$, $\mathrm{exit}(b_1)$, and $\mathrm{entry}(b_3)$. Notably, $\mathrm{entry}(b_2)$ is \emph{not} part of the live range of definition $b_0$ (think of why this is the case). Similarly, the live range
-	of the definition $b_4$ is $\mathrm{exit}(b_4)$, $\mathrm{entry}(b_5)$. The two
-	live ranges do not intersect, so $b$ can reuse $a$'s register.
-	
-	Describe an analysis that computes the live range for each definition in a program. \emph{Hint: you may use algorithms discussed in class.}
-	
-	\item Answer: 
-	{\color{red}Informally, a program point p is in the live range of definition \texttt{d: x = ...} if (1) x is a live
-	variable at p, and (2) d is a reachable definition at p. This gives rise to the following algorithm.
-	First, run Reaching Definitions and Live Variables analyses on the program. Let $\mathrm{In}_\mathrm{RD}$ and
-	$\mathrm{Out}_\mathrm{RD}$ be the result of Reaching Definitions and let $\mathrm{In}_\mathrm{LV}$ and $\mathrm{Out}_\mathrm{LV}$ be the result of Live
-	Variables. Then for every definition \texttt{d: x = ...} , the live range of d can be computed as \\
-	$\begin{gathered}\left\{\operatorname{entry}(b) \mid x \in \mathrm{IN}_{\mathrm{LV}}[b] \wedge d \in \mathrm{IN}_{\mathrm{RD}}[b]\right\} \\ \cup \\ \left\{\operatorname{exit}(b) \mid x \in \mathrm{OUT}_{\mathrm{LV}}[b] \wedge d \in \mathrm{OUT}_{\mathrm{RD}}[b]\right\}\end{gathered}$}
-	\end{problem}
+\end{center}
+In the above example, the live range of definition $b_0$ is $\mathrm{exit}(b_0)$,
+$\mathrm{entry}(b_1)$, $\mathrm{exit}(b_1)$, and $\mathrm{entry}(b_3)$. Notably, $\mathrm{entry}(b_2)$ is \emph{not} part of the live range of definition $b_0$ (think of why this is the case). Similarly, the live range
+of the definition $b_4$ is $\mathrm{exit}(b_4)$, $\mathrm{entry}(b_5)$. The two
+live ranges do not intersect, so $b$ can reuse $a$'s register.
+
+Describe an analysis that computes the live range for each definition in a program. \emph{Hint: you may use algorithms discussed in class.}
+
+\item Answer:
+{\color{red}Informally, a program point p is in the live range of definition \texttt{d: x = ...} if (1) x is a live
+variable at p, and (2) d is a reachable definition at p. This gives rise to the following algorithm.
+First, run Reaching Definitions and Live Variables analyses on the program. Let $\mathrm{In}_\mathrm{RD}$ and
+$\mathrm{Out}_\mathrm{RD}$ be the result of Reaching Definitions and let $\mathrm{In}_\mathrm{LV}$ and $\mathrm{Out}_\mathrm{LV}$ be the result of Live
+Variables. Then for every definition \texttt{d: x = ...} , the live range of d can be computed as \\
+$\begin{gathered}\left\{\operatorname{entry}(b) \mid x \in \mathrm{IN}_{\mathrm{LV}}[b] \wedge d \in \mathrm{IN}_{\mathrm{RD}}[b]\right\} \\ \cup \\ \left\{\operatorname{exit}(b) \mid x \in \mathrm{OUT}_{\mathrm{LV}}[b] \wedge d \in \mathrm{OUT}_{\mathrm{RD}}[b]\right\}\end{gathered}$}
+\end{problem}
+
+
+\begin{problem}
+Initial Values in Dataflow Analysis.
+
+\item This question asks you to think about how changes to initial values in a dataflow analysis can affect the result. Recall that an answer to a dataflow problem is considered ``safe'' if it is no greater than the ideal solution.
+
+\smallskip
+
+\begin{problempart}
+	Recall the Live Variables (LV) analysis, a backward dataflow algorithm covered in class. The version of LV presented in class initializes all interior points to $\varnothing$ (i.e., $\top$), and the boundary condition $\ins[\exit]$ to $\varnothing$ as well.
+
+	We would now like to extend the LV analysis to work with both \emph{local} and \emph{global} variables. Every program variable is either local or global.
+	% Formally, the set of all program variables $\mathcal{V}$ is the union of two disjoint sets, the set of local variables $\mathcal{L}$, and the set of global variables $\mathcal{G}$.
+	You may assume that local variables after the $\exit$ block are never going to be used, while no such assumption can be made for global variables. Carry out this extension by only changing the initial values.
+	\begin{enumerate}
+		\item What should be the initial value of the interior points?
+		\item What should be the initial value of the boundary condition?
+		\item Suppose we have a list of program variables, but do not know which ones are global and which ones are local. How should we set the interior points and boundary condition?
+		\item Reconsider the version of LV presented in class. Does it treat all variables as global, treat all variables as local, or neither?
+	\end{enumerate}
+
+	\item Answer:
+	\begin{enumerate}
+		\item {\color{red}{Set all interior points to $\Phi = \top$}}
+		\item {\color{red}{Initialize the boundary condition to the set of global variables.}}
+		\item {\color{red}{For safety, assume all program variables are global. Initialize the boundary condition
+		to the universal set (i.e., $\bot$). This is safe since $\bot$ is no greater than any other set,
+		including the actual set of global variables.}}
+		\item {\color{red}{The version of LV presented in class initializes the boundary condition to $\Phi$, and so
+		assumes the set of global variables is $\Phi$. In other words, it treats all variables as local.}}
+	\end{enumerate}
+
+
+\end{problempart}
+
+\pagebreak
+
+\begin{problempart}
+	Suppose you have defined a backward dataflow algorithm that has a monotonic transfer function and finite descending chains. You accidentally initialized $\ins[\exit]$ to $\bot$.
+	\begin{enumerate}
+		\item Will your algorithm give a safe answer for all flow graphs?
+		\item If not, will it give a safe answer for some flow graphs? If it will, give an example.
+		\item Will your algorithm give the MOP solution for all flow graphs, with the exception of $\ins[\exit]$?
+		\item If not, \emph{can} it give the MOP solution for some flow graphs, with the exception of $\ins[\exit]$? If it will, give an
+		      example.
+	\end{enumerate}
+	\emph{Hint: While these questions relate to \emph{all} backward dataflow algorithms, thinking about these questions in terms of a concrete analysis, like Live Variables, might help.}
+
+	\item Answer:
+	\begin{enumerate}
+		\item {\color{red}{Yes. Run the iterative algorithm with the correct initial values and the modified initial
+		values in parallel. At each iteration, by monotonicity of $f$, the values at each node in
+		the modified run will remain $\leq$ that in the correct run. Do not stop until both runs
+		reach FP (the run converged first will just remain its fixed results). Then by induction,
+		when both algorithms stop, the values under the modified algorithm (Modified-FP)
+		will still be $\leq$ the FP values under the correct algorithm (MFP). And since we know
+		MFP $\leq$ IDEAL, we have Modified-FP $\leq$ IDEAL as well.}}
+		\item {\color{red}{No.}}
+		\item {\color{red}{No. Any nontrivial example would act as a counterexample.}}
+		\item {\color{red}{Just take the liveness analysis for example.}}
+	\end{enumerate}
+
+\end{problempart}
+\end{problem}
+
+\pagebreak
+\begin{problem}
+Detecting Use-After-Free
+
+\item Use-after-free bugs occur when memory is accessed after it has been freed. This can lead to crashes and undefined behavior, and may make the program vulnerable to memory attacks. Detecting memory bugs is difficult because of aliases where multiple variables may point to
+the same location. We eliminate the complexity of this problem with the following simplified instruction set (\texttt{p} is a pointer variable and \texttt{v} is a non-pointer variable in the program):
+\begin{itemize}
+	\item \texttt{p = allocate();}
+	\item \texttt{*p = v;}
+	\item \texttt{v = *p;}
+	\item \texttt{free(p);}
+	\item Other local code that does not allocate memory, free memory, or access pointers.
+\end{itemize}
+
+Your task is to warn programmers of dereferences in the program that refer to locations that MAY have been freed. (1) Define a dataflow analysis to solve this problem by filling in the table below, and (2) Specify how you use the dataflow results to issue warnings on the specific vulnerable memory access statements.
+
+There are other errors such as dereferencing an uninitialized pointer. You may ignore such errors in this analysis. You may treat each instruction as a basic block.
+
+\begin{center}
+	\begin{tabular}{|l|p{0.6\textwidth}|}
+		\hline
+		\begin{tabular}[c]{@{}l@{}}Direction of your analysis\\ (forward/backward)\end{tabular}   & {\color{red}{Forward}} \\ \hline
+		Lattice elements and meaning & {\color{red}{Set of pointers that are freed.}} \\ \hline
+		\begin{tabular}[c]{@{}l@{}}Is there a top element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. $\Phi$}} \\ \hline
+		\begin{tabular}[c]{@{}l@{}}Is there a bottom element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. The universal set of all pointer.}} \\ \hline
+		Meet operator                & {\color{red}{Set Union}} \\ \hline
+		Transfer function            & {\color{red}{$$
+		\text { OUT }[b]= \begin{cases}\mathrm{IN}[b]-\{p\} & \text { if } b \text { is of form } p=a l l o c a t e() \\ \operatorname{IN}[b] \cup\{p\} & \text { if } b \text { is of form free }(\mathrm{p}) \\ \mathrm{IN}[b] & \text { otherwise. }\end{cases}
+		$$}} \\ \hline
+		Boundary condition           & {\color{red}{Either universal set or empty set. (If we want to error
+		on unallocated pointers, the universal set. Otherwise,
+		the empty set.)}} \\ \hline
+		Interior points              & {\color{red}{The empty set.}} \\ \hline
+	\end{tabular}
+\end{center}
+
+\item Issue warning for basic block $b$ if \underline{{\color{red}{b contains *p (either read or store) and p $\in$ IN[b].}}}
+
+\end{problem}
