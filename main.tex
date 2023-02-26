@@ -114,7 +114,52 @@
 
 % \usepackage[margin=1in]{geometry} 
 % \usepackage[T1]{fontenc}
+% \usepackage{lmodern}
+% \usepackage{mathtools,amssymb}
+
+% \usepackage{graphicx}
+% \usepackage{color}
+% \usepackage{tikz}
+% \usetikzlibrary{positioning}
+% \usepackage{microtype}
+% \usepackage{hyperref}
+
+% \newcommand{\TODO}[1]{{\color{red}\textit{todo:} #1}}
+
+% % problem and problempart environments.
+% % \begin{problem}
+% %     ...
+% %     \begin{problempart}
+% %         ...
+% %     \end{problempart}
+% %     \begin{problempart}
+% %         ...
+% %     \end{problempart}
+% % \end{problem}
+% \newcounter{problem}
+% \providecommand*{\problemname}{Problem}
+% \renewcommand{\theproblem}{\arabic{problem}}
+% \newcounter{problempart}[problem]
+% \providecommand*{\problempartname}{Problem}
+% \renewcommand{\theproblempart}{\arabic{problem}\alph{problempart}}
+% \newenvironment{problem}[1][Problem]{\begin{trivlist}%
+% \item[\hskip\labelsep {\bfseries #1}~{\bfseries \refstepcounter{problem}\arabic{problem}\label{prob:\theproblem}.}]%
+% \addcontentsline{toc}{section}{\protect\numberline{\theproblem} Problem \theproblem}}%
+% {\end{trivlist}}
+% \newenvironment{problempart}[1][Part]{\begin{trivlist}%
+% \item[\hskip\labelsep {\bfseries #1}~{\bfseries \refstepcounter{problempart}\alph{problempart}\label{prob:\theproblempart}.}]%
+% \addcontentsline{toc}{subsection}{\protect\numberline{\alph{problempart}} Part \alph{problempart}}}%
+% {\end{trivlist}}
+
+% \newcommand{\outs}{\ensuremath{\textsc{out}}}
+% \newcommand{\ins}{\ensuremath{\textsc{in}}}
+% \newcommand{\exit}{\ensuremath{\textsc{exit}}}
+% \newcommand{\entry}{\ensuremath{\textsc{entry}}}
+
+
+
 \usepackage{lmodern}
+\usepackage{enumitem}
 \usepackage{mathtools,amssymb}
 
 \usepackage{graphicx}
@@ -122,20 +167,16 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 \usepackage{microtype}
-\usepackage{hyperref}
+% \usepackage[colorlinks]{hyperref}
 
 \newcommand{\TODO}[1]{{\color{red}\textit{todo:} #1}}
 
-% problem and problempart environments.
-% \begin{problem}
-%     ...
-%     \begin{problempart}
-%         ...
-%     \end{problempart}
-%     \begin{problempart}
-%         ...
-%     \end{problempart}
-% \end{problem}
+\tikzset{
+    placeholder/.style={text width=6em, font=\mathstrut},
+    bb/.style={draw, align=center, placeholder},
+    every label/.style={font=\small}}
+
+
 \newcounter{problem}
 \providecommand*{\problemname}{Problem}
 \renewcommand{\theproblem}{\arabic{problem}}
@@ -155,6 +196,11 @@
 \newcommand{\ins}{\ensuremath{\textsc{in}}}
 \newcommand{\exit}{\ensuremath{\textsc{exit}}}
 \newcommand{\entry}{\ensuremath{\textsc{entry}}}
+
+\tikzset{
+    placeholder/.style={text width=6em, font=\mathstrut},
+    bb/.style={draw, align=center, placeholder},
+    every label/.style={font=\small}}
 
 
 % \lstset{style=mystyle}

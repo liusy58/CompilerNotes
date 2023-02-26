@@ -403,3 +403,148 @@ that are precolored before the maximum cardinality search algorithm starts.
 The resulting list may or may not be a simplicial elimination ordering, but
 we can nevertheless proceed with greedy coloring as before.
 
+
+
+
+\subsection{Problem Set}
+
+\begin{problem}
+    Register Allocation.
+
+    \begin{center}
+    \begin{tikzpicture}
+        \node[bb] (entry) {\entry};
+        \node[bb, below=1em of entry, label={left:B1}] (a1)  {$\begin{aligned}A&=9;\\D&=0;\\E&=5;\end{aligned}$};
+        \node[bb, below left=1em and 2em of a1, label={left:B2}] (b1) {$C=A-2;$};
+        \node[bb, below right=1em and 2em of a1, label={right:B3}] (c1) {$B=A+5;$};
+        \node[bb, below right=2em and 2em of b1, label={above:B4}] (a2) {$\begin{aligned}D&=E-2;\\E&=12;\end{aligned}$};
+        \node[bb, below=2em of c1, label={right:B5}] (c2) {$C=B+2;$};
+        \node[bb, below=2em of c2, label={right:B6}] (c3) {$E=E-C;$};
+        \node[bb, below=2em of b1, label={above left:B7}] (b2) {$B=D+7;$};
+        \node[bb, below=2em of b2, label={above left:B8}] (b3) {$D=B-2;$};
+        \node[bb, below left=-1em and 2em of b2, label={left:B9}] (e1) {$\begin{aligned}C&=B+1;\\D&=C+1;\\B&=D+6;\end{aligned}$};
+        \node[bb, below=4em of a2, label={left:B10}] (a3) {$E=D+E;$};
+        \node[bb, below=1em of a3] (exit) {\exit};
+
+
+        \draw[->] (entry) -- (a1);
+        \draw[->] (a1) -- (b1);
+        \draw[->] (b1) -- (b2);
+        \draw[->] (b2) -- (b3);
+        \draw[->] (b3) to [out=0,in=0] (b2);
+        \draw[->] (b2) -- (e1);
+        \draw[->] (e1) -- (b3);
+        \draw[->] (a1) -- (c1);
+        \draw[->] (c1) -- (c2);
+        \draw[->] (c2) -- (c3);
+        \draw[->] (c3) -- (a3);
+        \draw[->] (c1) -- (a2);
+        \draw[->] (b1) -- (a2);
+        \draw[->] (a2) -- (c3);
+        \draw[->] (b3) -- (a3);
+        \draw[->] (c3) -- (a3);
+        \draw[->] (a3) -- (exit);
+    \end{tikzpicture}
+    \end{center}
+
+    \item Perform register allocation for the above control flow graph.
+    Specifically, show the results of each of the following steps:
+    \begin{enumerate}
+        \item Show the merged live ranges for the following program by updating the graph with unique variable notations, e.g., replace definitions and usages of $B$ with $B_1$, $B_2$, etc. Note: if different definitions form a merged live range, use the same variable notation (you may convince yourself that this avoids ambiguity when a used variable may come from different definitions).
+        We provide you with an example. For the following simple program:
+        \begin{center}
+            \begin{tikzpicture}
+                \node[bb] (entry) {\entry};
+                \node[bb, below=1em of entry, label={left:B1}] (a1)  {$\begin{aligned}A=0;\\C=0;\end{aligned}$};
+                \node[bb, below left=0.5em and 2em of a1, label={left:B2}] (a2)  {$\begin{aligned}A=1;\\B=1;\end{aligned}$};
+                \node[bb, below right=1em and 2em of a1, label={left:B3}] (a3)  {$A=2;$};
+                \node[bb, below=4em of a1, label={left:B4}] (a4)  {$B=A + C;$};
+                \node[bb, below=1em of a4] (exit) {\exit};
+
+                \draw[->] (entry) -- (a1);
+                \draw[->] (a1) -- (a2);
+                \draw[->] (a1) -- (a3);
+                \draw[->] (a2) -- (a4);
+                \draw[->] (a3) -- (a4);
+                \draw[->] (a4) -- (exit);
+             \end{tikzpicture}
+        \end{center}
+        The resulting updated graph is:
+        \begin{center}
+            \begin{tikzpicture}
+                \node[bb] (entry) {\entry};
+                \node[bb, below=1em of entry, label={left:B1}] (a1)  {$\begin{aligned}A_1&=0;\\C_1&=0;\end{aligned}$};
+                \node[bb, below left=0.5em and 2em of a1, label={left:B2}] (a2)  {$\begin{aligned}A_2&=1;\\B_1&=1;\end{aligned}$};
+                \node[bb, below right=1em and 2em of a1, label={left:B3}] (a3)  {$A_2=2;$};
+                \node[bb, below=4em of a1, label={left:B4}] (a4)  {$B_2=A_2 + C_1;$};
+                \node[bb, below=1em of a4] (exit) {\exit};
+
+                \draw[->] (entry) -- (a1);
+                \draw[->] (a1) -- (a2);
+                \draw[->] (a1) -- (a3);
+                \draw[->] (a2) -- (a4);
+                \draw[->] (a3) -- (a4);
+                \draw[->] (a4) -- (exit);
+             \end{tikzpicture}
+        \end{center}
+        Taking the definitions of $A$ in B2 and B3 as example, $A$ is live at the beginning of B4, and both definitions reach that point, therefore they can be merged. \textbf{Note:} you do not need to consider any optimization such as PRE or constant propagation.
+        \item Draw the register interference graph with edges between nodes that represent merged live ranges. Using the same example program, the register inference graph should look like:
+         \begin{center}
+            \begin{tikzpicture}[lr/.style={draw, circle, radius=6em, align=center, font=\mathstrut}]
+                \node[lr] (n1) {$A_1$};
+                \node[lr, below=1em of n1] (n2) {$A_2$};
+                \node[lr, right=1em of n1] (n3) {$B_1$};
+                \node[lr, below=1em of n3] (n4) {$B_2$};
+                \node[lr, right=1em of n3] (n5) {$C_1$};
+                \draw (n2) -- (n5);
+             \end{tikzpicture}
+        \end{center}
+        \item Apply the coloring algorithm for a machine with 3 registers to the interference graph from the previous part. Show a possible resulting ``stack'' of registers and show which ones, if any, are marked as spilled.
+        \item Assign the merged live ranges (i.e., $A_1, B_1, ...$) to registers. You may assume the three registers are labeled as $R_1, R_2, R_3$.
+    \end{enumerate}
+
+    \newpage
+\end{problem}
+
+\begin{problem}
+    Register Allocation and Live Ranges.
+
+    \begin{problempart}
+        Let $n$ be the largest number of overlapping live ranges seen in a program.
+        \begin{enumerate}
+            \item Is it possible to assign all variables to registers on a machine with $n - 1$ registers, without spilling? Explain your answer.
+            \item Is it always possible to find a register allocation on a machine with $n$ registers, without spilling? Explain your answer.
+        \end{enumerate}
+    \end{problempart}
+    \begin{problempart}
+        Observe the control-flow graph below and answer the following questions.
+        \begin{enumerate}
+            \item What is the largest number of overlapping live ranges seen at any program point?
+            \item What is the minimum number of registers you need in order to successfully assign all variables without spilling?
+            \item Now, imagine that, as part of register allocation, you can insert \texttt{MOVE x y} operations that copy a value from register \texttt{x} to another register \texttt{y}. Can you allocate all of the variables with fewer registers than before? If so, how many would it require?
+        \end{enumerate}
+    \end{problempart}
+
+    \begin{center}
+    \begin{tikzpicture}[placeholder/.append style={text width=5em}]
+        \node[bb] (entry) {\entry};
+        \node[bb, below=1em of entry] (pre) {$\begin{aligned} B &= \ldots \\ C &= \ldots \end{aligned}$};
+        \node[bb, below=1em of pre] (loop) {$\begin{gathered}
+            \mathrm{print}(C) \\
+            A = \ldots \\
+            \mathrm{print}(B) \\
+            C = \ldots \\
+            \mathrm{print}(A) \\
+            B = \ldots
+        \end{gathered}$};
+        \node[bb, below=1em of loop] (exit) {\exit};
+
+        \draw[->] (entry) -- (pre);
+        \draw[->] (pre) -- (loop);
+        \draw[->] (loop) .. controls +(-130:4) and +(+130:4) .. (loop);
+        \draw[->] (loop) -- (exit);
+    \end{tikzpicture}
+    \end{center}
+
+    \newpage
+\end{problem}

@@ -832,10 +832,10 @@ Initial Values in Dataflow Analysis.
 		\item {\color{red}{Set all interior points to $\Phi = \top$}}
 		\item {\color{red}{Initialize the boundary condition to the set of global variables.}}
 		\item {\color{red}{For safety, assume all program variables are global. Initialize the boundary condition
-		to the universal set (i.e., $\bot$). This is safe since $\bot$ is no greater than any other set,
-		including the actual set of global variables.}}
+			      to the universal set (i.e., $\bot$). This is safe since $\bot$ is no greater than any other set,
+			      including the actual set of global variables.}}
 		\item {\color{red}{The version of LV presented in class initializes the boundary condition to $\Phi$, and so
-		assumes the set of global variables is $\Phi$. In other words, it treats all variables as local.}}
+			      assumes the set of global variables is $\Phi$. In other words, it treats all variables as local.}}
 	\end{enumerate}
 
 
@@ -857,12 +857,12 @@ Initial Values in Dataflow Analysis.
 	\item Answer:
 	\begin{enumerate}
 		\item {\color{red}{Yes. Run the iterative algorithm with the correct initial values and the modified initial
-		values in parallel. At each iteration, by monotonicity of $f$, the values at each node in
-		the modified run will remain $\leq$ that in the correct run. Do not stop until both runs
-		reach FP (the run converged first will just remain its fixed results). Then by induction,
-		when both algorithms stop, the values under the modified algorithm (Modified-FP)
-		will still be $\leq$ the FP values under the correct algorithm (MFP). And since we know
-		MFP $\leq$ IDEAL, we have Modified-FP $\leq$ IDEAL as well.}}
+			      values in parallel. At each iteration, by monotonicity of $f$, the values at each node in
+			      the modified run will remain $\leq$ that in the correct run. Do not stop until both runs
+			      reach FP (the run converged first will just remain its fixed results). Then by induction,
+			      when both algorithms stop, the values under the modified algorithm (Modified-FP)
+			      will still be $\leq$ the FP values under the correct algorithm (MFP). And since we know
+			      MFP $\leq$ IDEAL, we have Modified-FP $\leq$ IDEAL as well.}}
 		\item {\color{red}{No.}}
 		\item {\color{red}{No. Any nontrivial example would act as a counterexample.}}
 		\item {\color{red}{Just take the liveness analysis for example.}}
@@ -892,18 +892,18 @@ There are other errors such as dereferencing an uninitialized pointer. You may i
 \begin{center}
 	\begin{tabular}{|l|p{0.6\textwidth}|}
 		\hline
-		\begin{tabular}[c]{@{}l@{}}Direction of your analysis\\ (forward/backward)\end{tabular}   & {\color{red}{Forward}} \\ \hline
-		Lattice elements and meaning & {\color{red}{Set of pointers that are freed.}} \\ \hline
-		\begin{tabular}[c]{@{}l@{}}Is there a top element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. $\Phi$}} \\ \hline
-		\begin{tabular}[c]{@{}l@{}}Is there a bottom element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. The universal set of all pointer.}} \\ \hline
-		Meet operator                & {\color{red}{Set Union}} \\ \hline
+		\begin{tabular}[c]{@{}l@{}}Direction of your analysis\\ (forward/backward)\end{tabular}   & {\color{red}{Forward}}                                               \\ \hline
+		Lattice elements and meaning & {\color{red}{Set of pointers that are freed.}}                       \\ \hline
+		\begin{tabular}[c]{@{}l@{}}Is there a top element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. $\Phi$}}                                           \\ \hline
+		\begin{tabular}[c]{@{}l@{}}Is there a bottom element?\\ If yes, what is it?\end{tabular}   & {\color{red}{Yes. The universal set of all pointer.}}                \\ \hline
+		Meet operator                & {\color{red}{Set Union}}                                             \\ \hline
 		Transfer function            & {\color{red}{$$
-		\text { OUT }[b]= \begin{cases}\mathrm{IN}[b]-\{p\} & \text { if } b \text { is of form } p=a l l o c a t e() \\ \operatorname{IN}[b] \cup\{p\} & \text { if } b \text { is of form free }(\mathrm{p}) \\ \mathrm{IN}[b] & \text { otherwise. }\end{cases}
-		$$}} \\ \hline
+						\text { OUT }[b]= \begin{cases}\mathrm{IN}[b]-\{p\} & \text { if } b \text { is of form } p=a l l o c a t e() \\ \operatorname{IN}[b] \cup\{p\} & \text { if } b \text { is of form free }(\mathrm{p}) \\ \mathrm{IN}[b] & \text { otherwise. }\end{cases}
+					$$}}                                                                                                \\ \hline
 		Boundary condition           & {\color{red}{Either universal set or empty set. (If we want to error
-		on unallocated pointers, the universal set. Otherwise,
-		the empty set.)}} \\ \hline
-		Interior points              & {\color{red}{The empty set.}} \\ \hline
+					on unallocated pointers, the universal set. Otherwise,
+					the empty set.)}}                                                                                   \\ \hline
+		Interior points              & {\color{red}{The empty set.}}                                        \\ \hline
 	\end{tabular}
 \end{center}
 
