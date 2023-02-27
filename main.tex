@@ -185,11 +185,11 @@
 \renewcommand{\theproblempart}{\arabic{problem}\alph{problempart}}
 \newenvironment{problem}[1][Problem]{\begin{trivlist}%
 \item[\hskip\labelsep {\bfseries #1}~{\bfseries \refstepcounter{problem}\arabic{problem}\label{prob:\theproblem}.}]%
-\addcontentsline{toc}{section}{\protect\numberline{\theproblem} Problem \theproblem}}%
+\addcontentsline{toc}{subsection}{\protect\numberline{\theproblem} Problem \theproblem}}%
 {\end{trivlist}}
 \newenvironment{problempart}[1][Part]{\begin{trivlist}%
 \item[\hskip\labelsep {\bfseries #1}~{\bfseries \refstepcounter{problempart}\alph{problempart}\label{prob:\theproblempart}.}]%
-\addcontentsline{toc}{subsection}{\protect\numberline{\alph{problempart}} Part \alph{problempart}}}%
+\addcontentsline{toc}{subsubsection}{\protect\numberline{\alph{problempart}} Part \alph{problempart}}}%
 {\end{trivlist}}
 
 \newcommand{\outs}{\ensuremath{\textsc{out}}}
@@ -288,6 +288,7 @@
 \input{PA.tex}
 \input{RegAlloc.tex}
 \input{LS.tex}
+\input{SoftwarePipe.tex}
 \input{Dynamic Code Optimization.tex}
 \input{DSL.tex}
 \input{MHO.tex}
