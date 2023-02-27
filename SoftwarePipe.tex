@@ -18,7 +18,7 @@ Consider the following cyclic data-dependence graph:
 Construct the table of longest simple paths between each pair of nodes, in terms of T, the initiation interval. Then, for T = 4, give the constraints on (the schedule of) each pair of nodes. For any node x, let S(x) be the clock, relative to the beginning of the iteration, at which the instruction represented by node x is executed. Identify below the constraints on S(a) in terms of S(b).
 
  
- 	\item a) 	S(b) + 3 $\leq$ S(a) $\leq$ S(b) - 1
+ 	\item a) 	S(b) - 3 $\leq$ S(a) $\leq$ S(b) - 1
  	\item b) 	S(b) - 1 $\leq$ S(a) $\leq$ S(b) + 3
  	\item c) 	S(b) + 1 $\leq$ S(a) $\leq$ S(b) - 3
  	\item d) 	S(b) - 3 $\leq$ S(a) $\leq$ S(b) + 1
@@ -44,7 +44,11 @@ $$
 To read the constraints off of this table, suppose that the entry in the row for x and column for y is v. Also, suppose that the entry in the row for y and the column for x is u. Then the constraint on S(x) is:
 S(y) + u $\leq$ S(x) $\leq$ S(y) - v
 
-For example, S(b) - 3 $\leq$ S(a) $\leq$ S(b) - 1.}
+For example, S(b) - 3 $\leq$ S(a) $\leq$ S(b) - 1.
+
+
+Solution : a
+}
 
 
 
@@ -86,6 +90,8 @@ However, there are several ways to introduce two nop's so that no two instructio
 LD, ST, LD, nop, nop, ADD, ST, ADD, ST.
 
 The loads occur at clocks 1 and 3 --- a difference of 2, which is not divisible by 3. The ADD's occur at clocks 6 and 8, again a difference not divisible by 3. The stores occur at clocks 2, 7, and 9, and none of the differences 9-2, 9-7, or 7-2 are divisible by 3.
+
+Solution:c
 }
 \end{problem}
 
