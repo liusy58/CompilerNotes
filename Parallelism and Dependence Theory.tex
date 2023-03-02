@@ -1,10 +1,195 @@
 \newpage
 
 
+
+
+
+
 \section{Parallelism and Dependence Theory}
 
-  
+\subsection{Exercises}
 
+\begin{problem}
+Consider the following loop nest:
+
+\begin{lstlisting}[language=C,frame=single]
+	for (i = 1; i < 1000; i++)
+         for (j = 1; j < 1000; j++)
+             A[i][j] = A[i+1][j-1];
+	\end{lstlisting}
+To parallelize this loop as much as possible, we may pick a processor space and map each iteration (i, j)
+to a selected processor in that space, using an affine transformation. Consider the data dependences in the
+statement of the loop body. What space-partition constraints do they imply? What is the maximum dimension of
+the processor space? What constraints on the affine mapping from iterations to processors are implied? Identify
+from the list below, the one mapping that:
+
+\item 1.Satisfies the space-partition constraints, and
+\item 2.Provides the maximum possible degree of parallelism.
+
+
+\item a.
+$$
+	\begin{bmatrix}
+		1 & 1
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		2
+	\end{bmatrix}
+$$
+
+
+\item b.
+$$
+	\begin{bmatrix}
+		3 & 0
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		5
+	\end{bmatrix}
+$$
+
+\item c.
+$$
+	\begin{bmatrix}
+		1 & 0
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		2
+	\end{bmatrix}
+$$
+
+\item d.
+$$
+	\begin{bmatrix}
+		4 & -4
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		9
+	\end{bmatrix}
+$$
+
+\item {\color{red} Hint: The data-dependence constraints say that iterations which touch the same array element must map to the same processor. Notice that A[i,j] is written at iteration (i, j) and read at iteration (i', j'), where i = i' + 1 and j = j' - 1. Thus, for example, the iteration with i = 7 and j = 4 must be assigned to the same processor as the iteration with i = 6 and j = 5.}
+
+\end{problem}
+
+
+\begin{problem}
+Consider the following fully permutable loop nest:
+\begin{lstlisting}[language=C,frame=single]
+     for (i = 0; i < 100; i++)
+         for (j = 0; j < 100; j++)
+             A[i][j] = A[i+1][j+1];
+\end{lstlisting}
+A time partition for the statement that forms the body of the loop nest is a matrix and vector of the form
+
+$$
+	\begin{bmatrix}
+		x & y
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		z
+	\end{bmatrix}
+$$
+
+
+that satisfies the time-partition constraints for the loop. Determine what these constraints are, and what they say about the possible values of x, y, and z. Then, identify the time partition in the list below that DOES NOT satisfy the constraints.
+
+
+
+\item a.
+$$
+	\begin{bmatrix}
+		3 & 2
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		200
+	\end{bmatrix}
+$$
+
+\item b.
+$$
+	\begin{bmatrix}
+		1 & 1
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		0
+	\end{bmatrix}
+$$
+
+\item c.
+$$
+	\begin{bmatrix}
+		1 & 0
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		100
+	\end{bmatrix}
+$$
+\item a.
+$$
+	\begin{bmatrix}
+		-5 & 3
+	\end{bmatrix}
+	\times
+	\begin{bmatrix}
+		i \\
+		j
+	\end{bmatrix}
+	+
+	\begin{bmatrix}
+		1000
+	\end{bmatrix}
+$$
+\item {\color{red} Hint: the data dependences for this problem are based on the fact that after A[i,j] is written during iteration (i, j), the same element is read at iteration (i+1, j+1). Thus, the time-partition constraints require that the time partition for iteration (i, j) is no greater than the time partition for iteration (i+1, j+1). }
+\end{problem}
 
 \subsection{DATA DEPENDENCE}
 
@@ -17,20 +202,20 @@
 
 
 
-    \begin{itemize}
-    \item Flow (true) dependence: a statement $S_i$ precedes a
-    statement $S_j$ in execution and $S_i$ computes a data value that
-    $S_j$ uses. $S_i \delta^{+} S_j$. In Figure \ref{fig:p197}, $S_1 \delta^{+} S_2$ and $S_2 \delta^{+} S_4$
+\begin{itemize}
+	\item Flow (true) dependence: a statement $S_i$ precedes a
+	      statement $S_j$ in execution and $S_i$ computes a data value that
+	      $S_j$ uses. $S_i \delta^{+} S_j$. In Figure \ref{fig:p197}, $S_1 \delta^{+} S_2$ and $S_2 \delta^{+} S_4$
 
-    \item Anti dependence: a statement $S_i$ precedes a statement $S_j$ in
-    execution and $S_i$ uses a data value that $S_j$ computes. $S_i \delta^{a} S_j$
-    In Figure \ref{fig:p197}, $S_2 \delta^{a} S_3$
+	\item Anti dependence: a statement $S_i$ precedes a statement $S_j$ in
+	      execution and $S_i$ uses a data value that $S_j$ computes. $S_i \delta^{a} S_j$
+	      In Figure \ref{fig:p197}, $S_2 \delta^{a} S_3$
 
-    \item Output dependence: a statement $S_i$ precedes a statement $S_j$
-    in execution and $S_i$ computes a data value that $S_j$ also
-    computes. $S_i \delta^{o} S_j$,
-    In Figure \ref{fig:p197}, $S_1 \delta^{o} S_3$ and $S_3 \delta^{o} S_4$
-    \end{itemize}
+	\item Output dependence: a statement $S_i$ precedes a statement $S_j$
+	      in execution and $S_i$ computes a data value that $S_j$ also
+	      computes. $S_i \delta^{o} S_j$,
+	      In Figure \ref{fig:p197}, $S_1 \delta^{o} S_3$ and $S_3 \delta^{o} S_4$
+\end{itemize}
 
 
 The dependence is said to flow from $S_i$ to $S_j$ because $S_i$
@@ -127,15 +312,15 @@ The iterations of a loop may be executed
 in parallel with one another if and only if
 no dependences are carried by the loop.
 
-When that loop does not have a loop-carried dependence, it 
+When that loop does not have a loop-carried dependence, it
 is safe to run a loop in parallel, which means
- outermost loop with a direction other than “=“
+outermost loop with a direction other than “=“
 
- \begin{figure}[H]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.3\textwidth]{p203.png}
 	\caption{Iterations of loop j must be executed sequentially, but the
-    iterations of loop i may be executed in parallel. Outer loop parallelism.}
+		iterations of loop i may be executed in parallel. Outer loop parallelism.}
 	\label{fig:p203}
 \end{figure}
 
@@ -144,7 +329,7 @@ is safe to run a loop in parallel, which means
 	\centering
 	\includegraphics[width=0.3\textwidth]{p204.png}
 	\caption{Iterations of loop i must be executed sequentially, but the
-    iterations of loop j may be executed in parallel. Inner loop parallelism.}
+		iterations of loop j may be executed in parallel. Inner loop parallelism.}
 	\label{fig:p204}
 \end{figure}
 
@@ -165,9 +350,9 @@ Lamport’s Test is used when there is a single index variable
 in the subscript expressions, and when the coefficients of
 the index variable in both expressions are the same.
 
-\[ 
-A(    \cdots    , b * i + c_1 ,    \cdots    ) =    \cdots   
-   \cdots    = A(    \cdots    , b * i + c_2 ,    \cdots    )
+\[
+	A(    \cdots    , b * i + c_1 ,    \cdots    ) =    \cdots
+	\cdots    = A(    \cdots    , b * i + c_2 ,    \cdots    )
 \]
 
 
@@ -175,14 +360,14 @@ The dependence problem: does there exist i 1 and i 2 , such
 that \(L_i \leq i_1 \leq i_2 \leq U_i \) and such that
 
 
-\[ 
-b * i_1 + c_1  =  b * i_2 + c_2
+\[
+	b * i_1 + c_1  =  b * i_2 + c_2
 \]
 
 or
 
-\[ 
- i_2 - i _1 = \frac{c_1-c_2}{b_2} 
+\[
+	i_2 - i _1 = \frac{c_1-c_2}{b_2}
 \]
 
 There is integer solution if and only if \( \frac{c_1-c_2}{b_2}  \)is integer.
@@ -190,9 +375,9 @@ The dependence distance is \( d =  \frac{c_1-c_2}{b_2}  \) if \( L_i \leq |d| \l
 
 \begin{itemize}
 
-\item 	$d > 0$:  true dependence.
-\item 	$d = 0$:  loop independent dependence.
-\item 	$d < 0$:  anti dependence.
+	\item 	$d > 0$:  true dependence.
+	\item 	$d = 0$:  loop independent dependence.
+	\item 	$d < 0$:  anti dependence.
 \end{itemize}
 
 
@@ -211,22 +396,22 @@ The dependence distance is \( d =  \frac{c_1-c_2}{b_2}  \) if \( L_i \leq |d| \l
 \end{figure}
 
 \subsubsection{GCD Test}
-A greatest common divisor (GCD) test is 
-a test used in computer science compiler theory to study of 
-loop optimization and loop dependence analysis to test the dependency 
+A greatest common divisor (GCD) test is
+a test used in computer science compiler theory to study of
+loop optimization and loop dependence analysis to test the dependency
 between loop statements. \cite{GCDtestW13:online}
 
-It is difficult to analyze array references in compile time to 
-determine data dependency (whether they point to same address or not). 
-A simple and sufficient test for the absence of a dependence is 
-the greatest common divisor (GCD) test. It is based on the observation 
-that if a loop carried dependency exists between $X[a*i + b]$ and $X[c*i + d]$ 
+It is difficult to analyze array references in compile time to
+determine data dependency (whether they point to same address or not).
+A simple and sufficient test for the absence of a dependence is
+the greatest common divisor (GCD) test. It is based on the observation
+that if a loop carried dependency exists between $X[a*i + b]$ and $X[c*i + d]$
 (where X is the array; a, b, c and d are integers, and i is the loop variable),
- then GCD (c, a) must divide (d - b). The assumption is that the loop must
-  be normalized : written so that the loop index/variable starts at 1 and 
-  gets incremented by 1 in every iteration. For example, in the following
-   loop, a=2, b=3, c=2, d=0 and GCD(a,c)=2 and (d-b) is -3. Since 2 
-   does not divide -3, no dependence is possible.
+then GCD (c, a) must divide (d - b). The assumption is that the loop must
+be normalized : written so that the loop index/variable starts at 1 and
+gets incremented by 1 in every iteration. For example, in the following
+loop, a=2, b=3, c=2, d=0 and GCD(a,c)=2 and (d-b) is -3. Since 2
+does not divide -3, no dependence is possible.
 
 \begin{lstlisting}[language=C,frame=single ,label = lst:expression1]
 	for (i=1; i<=100; i++)
