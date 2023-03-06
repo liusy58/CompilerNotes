@@ -1,7 +1,151 @@
 \newpage
 
 
-\section{List Scheduling}
+% \section{List Scheduling}
+
+
+\section{Instruction Scheduling}
+
+
+\subsection{List Scheduling}
+
+List scheduling is a high-level scheduling technique that operates on a basic block of code. The goal of list scheduling is to assign a relative order to the instructions in the basic block so that the dependencies between them are respected and the execution time is minimized. List scheduling considers only the instructions within the basic block and does not take into account the other blocks of code that the program may contain.
+
+\subsection{Global Instruction Scheduling}
+
+Global instruction scheduling, on the other hand, is a more advanced low-level scheduling technique that considers the entire program rather than just a basic block of code. It attempts to schedule instructions from all basic blocks in the program to minimize the total execution time. Global instruction scheduling can reorder instructions across basic blocks and make use of available resources, such as pipelining and parallelism, to improve performance.
+
+
+
+\begin{algorithm}
+	\caption{Iterative Algorithms}\label{alg:Global Instruction Scheduling}
+	\begin{algorithmic}
+		\State {Step 0: Compute data dependencies between instructions.}
+		\State {Step 1: Figure out code motions that are always better.}
+		\State {Step 2: Figure out the probability of each code path to identify hot code paths.}
+		\State {Step 3: Speculate. }
+	\end{algorithmic}
+\end{algorithm}
+
+
+
+\begin{problem} Global Instruction Scheduling
+
+	\item Assume you have a machine with a statically scheduled processor that can only issue one operation every
+	clock. All operations have a latency of one clock cycle, with the exception of its memory load
+	operation, which has a latency of three clock cycles. Consider the following locally scheduled
+	program:
+	\begin{center}
+		\begin{tikzpicture}
+			\node[bb, text width=9em, label=left:L0] (l0)  {$d$ = $*a$;\\\texttt{nop};\\\texttt{nop};\\\texttt{if} ($d \ge 0$) \texttt{goto} L1;};
+			\node[bb, text width=9em, below left=2em and 3em of l0, label=left:L1] (l1) {\texttt{if} ($d == 0$) \texttt{goto} L3;};
+			\node[bb, text width=9em, below right=2em and 3em of l0, label=right:L2] (l2) {$f$ = $*d$; \\\texttt{nop}; \\ \texttt{nop};\\ $k$ = $f+8$;};
+			\node[bb, text width=9em, below right=1em and 1em of l1, label=left:L3] (l3) {$k$ = $*d$;\\ \texttt{nop};\\ \texttt{nop};\\ $c$ = $k + k$;};
+			\node[bb, text width=9em, below=15em of l0, label=right:L4] (l4) {$w$ = $a + c$; \\ $t$ = $k + w$;};
+			\node[bb, below=2em of l4] (exit)  {\exit};
+	
+			\node[below=8em of l1] {$1 - p$};
+			\draw[->] (l0) -- (l1) node [midway, above=10pt] {$p$};
+			\draw[->] (l0) -- (l2) node [midway, above=7pt] {$1 - p$};
+			\draw[->] (l1) -- (l3) node [midway, below=10pt] {$p$};
+			\draw[->] (l2) -- (l4);
+			\draw[->] (l3) -- (l4);
+			\draw[->] (l1.south) to [out=-90,in=180] (l4.west);
+			\draw[->] (l4) -- (exit);
+		\end{tikzpicture}
+	\end{center}
+	All variables in the program are defined before the entry (L0) of the program.
+	Assume that only variable $t$ is live at the exit of the program. Each branch in the flow graph is
+	labeled with the probability that it is taken dynamically. To answer the following, you may
+	apply any of the code motions discussed in class, but no other optimizations.
+	
+	\begin{enumerate}
+		\item Is this the best globally scheduled code that can be generated given that $p = 0.9$? If
+		not, provide the improved code along with its expected execution time. \textbf{Note: for an \texttt{if} branch instruction, assume that if the branch corresponding to ``\texttt{goto} L'' is taken, it costs two cycles; otherwise it costs only one.}
+	{\color{red}
+	
+		In the original program, the number of clock cycles and the probability for each path
+		are shown as follows:
+		\item L0 $\rightarrow$ L1 $\rightarrow$ L4, p = 0.09, num\_cycles = 8
+		\item L0 $\rightarrow$ L1 $\rightarrow$ L3 $\rightarrow$ L4, p = 0.81, num\_cycles = 13
+		\item L0 $\rightarrow$ L2 $\rightarrow$ L4, p = 0.1, num\_cycles = 10
+
+		The expected execution time is 8 * 0.09 + 13 * 0.81 + 10 * 0.1 = 12.25 cycles.
+		We can get a better schedule by pushing the instructions in L4 upwards to fill in the
+		idle points when the program is waiting for the result of a memory load.
+		
+		\begin{center}
+			\begin{tikzpicture}
+				\node[bb, text width=9em, label=left:L0] (l0)  {$d$ = $*a$;\\ $w$ = $a + c$; \\ $t$ = $k + w$; \\\texttt{if} ($d \ge 0$) \texttt{goto} L1;};
+				\node[bb, text width=9em, below left=2em and 3em of l0, label=left:L1] (l1) {\texttt{if} ($d == 0$) \texttt{goto} L3;};
+				\node[bb, text width=9em, below right=2em and 3em of l0, label=right:L2] (l2) {$f$ = $*d$; \\\texttt{nop}; \\ \texttt{nop};\\ $k$ = $f+8$;\\ $t$ = $k + w$;};
+				\node[bb, text width=9em, below right=1em and 1em of l1, label=left:L3] (l3) {$k$ = $*d$;\\ \texttt{nop};\\ \texttt{nop};\\ $c$ = $k + k$;\\$w$ = $a + c$; \\ $t$ = $k + w$;};
+				\node[bb, text width=9em, below=15em of l0, label=right:L4] (l4) {};
+				\node[bb, below=2em of l4] (exit)  {\exit};
+		
+				\node[below=8em of l1] {$1 - p$};
+				\draw[->] (l0) -- (l1) node [midway, above=10pt] {$p$};
+				\draw[->] (l0) -- (l2) node [midway, above=7pt] {$1 - p$};
+				\draw[->] (l1) -- (l3) node [midway, below=10pt] {$p$};
+				\draw[->] (l2) -- (l4);
+				\draw[->] (l3) -- (l4);
+				\draw[->] (l1.south) to [out=-90,in=180] (l4.west);
+				\draw[->] (l4) -- (exit);
+			\end{tikzpicture}
+		\end{center}
+
+
+
+		The number of clock cycles and the probability for each path are shown as follows:
+\item L0 $\rightarrow$ L1 $\rightarrow$ L4, p = 0.09, num\_cycles = 6
+\item L0 $\rightarrow$ L1 $\rightarrow$ L3 $\rightarrow$ L4, p = 0.81, num\_cycles = 13
+\item L0 $\rightarrow$ L2 $\rightarrow$ L4, p = 0.1, num\_cycles = 9
+The expected execution time is 6 * 0.09 + 13 * 0.81 + 9 * 0.1 = 11.97 cycles.
+
+	}
+
+		\item Repeat part 1, but instead assume that $p = 0.1$.
+	
+	{\color{red}
+	In the original program, the number of clock cycles and the probability for each path
+	are shown as follows:
+	\item L0 $\rightarrow$ L1 $\rightarrow$ L4, p = 0.09, num\_cycles = 8
+	\item L0 $\rightarrow$ L1 $\rightarrow$ L3 $\rightarrow$ L4, p = 0.01, num\_cycles = 13
+	\item L0 $\rightarrow$ L2 $\rightarrow$ L4, p = 0.9, num\_cycles = 10
+	The expected execution time is 8 * 0.09 + 13 * 0.01 + 10 * 0.9 = 9.85 cycles.
+	With the following optimized program:
+
+	\begin{center}
+		\begin{tikzpicture}
+			\node[bb, text width=9em, label=left:L0] (l0)  {$d$ = $*a$;\\$w$ = $a + c$; \\ $t$ = $k + w$;\\ $k$ = $*d$;\\ \texttt{if} ($d \ge 0$) \texttt{goto} L1;};
+			\node[bb, text width=9em, below left=2em and 3em of l0, label=left:L1] (l1) {\texttt{if} ($d == 0$) \texttt{goto} L3;};
+			\node[bb, text width=9em, below right=2em and 3em of l0, label=right:L2] (l2) {\texttt{nop}; \\ $k$ = $f+8$; \\ $t$ = $k + w$;};
+			\node[bb, text width=9em, below right=1em and 1em of l1, label=left:L3] (l3) {$k$ = $*d$;\\ \texttt{nop};\\ \texttt{nop};\\ $c$ = $k + k$; \\ $w$ = $a + c$; \\ $t$ = $k + w$; };
+			\node[bb, text width=9em, below=15em of l0, label=right:L4] (l4) {};
+			\node[bb, below=2em of l4] (exit)  {\exit};
+	
+			\node[below=8em of l1] {$1 - p$};
+			\draw[->] (l0) -- (l1) node [midway, above=10pt] {$p$};
+			\draw[->] (l0) -- (l2) node [midway, above=7pt] {$1 - p$};
+			\draw[->] (l1) -- (l3) node [midway, below=10pt] {$p$};
+			\draw[->] (l2) -- (l4);
+			\draw[->] (l3) -- (l4);
+			\draw[->] (l1.south) to [out=-90,in=180] (l4.west);
+			\draw[->] (l4) -- (exit);
+		\end{tikzpicture}
+	\end{center}
+
+	the number of clock cycles and the probability for each path are shown as follows:
+\item L0 $\rightarrow$ L1 $\rightarrow$ L4, p = 0.09, num\_cycles = 7
+\item L0 $\rightarrow$ L1 $\rightarrow$ L3 $\rightarrow$ L4, p = 0.01, num\_cycles = 14
+\item L0 $\rightarrow$ L2 $\rightarrow$ L4, p = 0.9, num\_cycles = 8
+The expected execution time is 7 * 0.09 + 14 * 0.01 + 8 * 0.9 = 7.97 cycles.
+	}
+	\end{enumerate}
+	
+	\end{problem}
+	
+
 
 
 We talk about what we called
