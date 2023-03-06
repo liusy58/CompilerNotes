@@ -147,6 +147,60 @@ The expected execution time is 7 * 0.09 + 14 * 0.01 + 8 * 0.9 = 7.97 cycles.
 	
 
 
+	\begin{problem} Software Pipelining with Register Allocation
+
+		\item Consider the following do-all loop program:
+		\begin{verbatim}
+		for (i = 0; i < 1000; i++)
+			C[i] = (A[i] - b) * A[i];
+		\end{verbatim}
+		One iteration of the loop can be written in assembly as:
+		\begin{verbatim}
+		1.  LD   R5, 0(R1++)     // R1 = &A[i]; R5 = *R1; R1++
+		2.  SUB  R6, R5, R2      // R2 = b; R6 = R5 - R2
+		3.
+		4.  MUL  R6, R6, R5      // R6 = R6 * R5
+		5.
+		6.  ST   R6, 0(R3++)     // R3 = &C[i]; *R3 = R6; R3++
+		\end{verbatim}
+		Optimize this program using software pipelining for a machine with the following specifications:
+		\begin{itemize}[noitemsep]
+			\item The processor can issue at most one \texttt{LD} instruction, one \texttt{ST} instruction, and one arithmetic instruction within the same clock cycle.
+			\item Each arithmetic operation has a two-cycle latency, but can be pipelined.
+			\item The processor supports auto-incrementing addressing and hardware loop operations.
+		\end{itemize}
+		
+		\item Answer the questions below using your optimized program:
+		\begin{enumerate}
+			\item What is the minimum initiation interval?
+			{\color{red} 2}
+			\item Write down the pipelined portion of the loop using actual registers. Annotate each instruction with the iteration it's associated with (e.g., $i$, $i+1$, $i+2$, etc.). Resolve any anti-dependencies across loop iterations by unrolling the loop as described in class.
+			
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{p244.png}
+    \caption{}
+    \label{fig:p244}
+\end{figure}
+		
+			\item How many more registers does software pipelining require compared to the unpipelined code? Think of a way we can reduce the number of registers used without decreasing the throughput. (You do not have to show the generated code.) \emph{Hint}: check the live ranges for all the duplicated registers.
+		{\color{red}We need 4 more registers (R15, R16, R25, R26). Notice that R25 isn’t strictly needed,
+		since the live ranges of R5 and R25 do not overlap. We can remove the need for R25
+		by unrolling the loop 6 times rather than 3 with the following register assignment:
+		\item (a) R5 – R6
+		\item (b) R15 – R16
+		\item (c) R5 – R26
+		\item (d) R15 – R6
+		\item (e) R5 – R16
+		\item (f) R15 – R26
+		In general, we can achieve minimum register pressure by unrolling n times, where n is
+		the least common multiple of $\lceil$lifetimer/T$\rceil$ for all registers r. This is in contrast with
+		the algorithm in lecture 8, which suggests unrolling max$\lceil$lifetimer/T$\rceil$}
+		\end{enumerate}
+		
+		\end{problem}
+
+
 
 We talk about what we called
 machine-independent optimizations in previous chapters. So for example, things like
