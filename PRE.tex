@@ -2,7 +2,14 @@
 
 \section{Partial Redundancy Elimination}
 Partial redundancy elimination (PRE) is a global optimization introduced by Morel and Renvoise\cite{morel1979global}. It
-combines and extends two other techniques: common subexpression elimination and loop-invariant code motion. 
+combines and extends two other techniques: common subexpression elimination and loop-invariant code motion.
+
+
+
+The main difference between Partial Redundancy Elimination (PRE) and Common Subexpression Elimination (CSE)
+is that PRE aims to eliminate redundancy in a limited set of execution paths,
+whereas CSE aims to eliminate redundancy across all execution paths.
+
 
 An expression is partially redundant at point p if it
 is redundant along some, but not all, paths that reach
@@ -14,11 +21,11 @@ problem that shows where inserting copies of a computation would convert a parti
 redundancy. Finally, it inserts the appropriate code and
 deletes the redundant copy of the expression.
 
-A key feature of PRE is that it never lengthens an
-execution path. To see this more clearly, consider the
+\textbf{A key feature of PRE is that it never lengthens an
+	execution path.} To see this more clearly, consider the
 example shown in Figure \ref{fig:p82}. In the fragment on the left, the second
 computation of \texttt{x + y} is partially redundant; it is only
-available along one path from the if. Inserting an evaluation of 
+available along one path from the if. Inserting an evaluation of
 \texttt{x + y} on the other path makes the computation
 redundant and allows it to be eliminated, as shown in
 the right-hand fragment. Note that the left path stays
@@ -26,26 +33,26 @@ the same length while the right path has been shortened.
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.5\textwidth]{p82.png}
-         \caption{}
-         \label{fig:p82}
+	\centering
+	\includegraphics[width=0.5\textwidth]{p82.png}
+	\caption{}
+	\label{fig:p82}
 \end{figure}
 
 
 Loop-invariant expressions are also partially redundant,
 as shown in Figure \ref{fig:p83}. On the left, \texttt{x + y} is
-partially redundant since it is available from one predecessor 
+partially redundant since it is available from one predecessor
 (along the back edge of the loop), but not the
 other. Inserting an evaluation of \texttt{x + y} before the loop
 allows it to be eliminated from the loop body.
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.5\textwidth]{p83.png}
-         \caption{}
-         \label{fig:p83}
+	\centering
+	\includegraphics[width=0.5\textwidth]{p83.png}
+	\caption{}
+	\label{fig:p83}
 \end{figure}
 
 
@@ -54,44 +61,44 @@ allows it to be eliminated from the loop body.
 For every expression, we can do a dataflow analysis.
 
 \begin{center}
-    \begin{tabular}{|c|c|}
-   \hline Direction & Forward\\
-   \hline Meet operator & \( \cup \)\\
-   \hline Lattice & \( \{ 0,1 \} \)\\
-   \hline Top(T) & \( 0 \)\\
-   \hline Bottom &  \( 1 \)\\
-   \hline Boundary condition for entry node & \( 0 \) \\  
-   \hline Initialization for internal nodes & \(\mathrm{T}\) \\
-   \hline Finited escending chain? &\checkmark  \\
-   \hline Transferfunction  &  \( PAVOUT[i] =  (PAVIN[i] - KILL[i]) \cup AVLOC[i]\)\\
-   \hline Monotone\&Distributive?  & \checkmark \\
-   \hline AVLOC  & {Expression is {\color{blue}locally available (AVLOC)} if downwards exposed.  }\\
-   \hline KILL & Expression is {\color{blue}killed ( KILL)} if any assignments to operands. \\
-   \hline
-   \end{tabular}  
-   \end{center}
+	\begin{tabular}{|c|c|}
+		\hline Direction                         & Forward                                                                         \\
+		\hline Meet operator                     & \( \cup \)                                                                      \\
+		\hline Lattice                           & \( \{ 0,1 \} \)                                                                 \\
+		\hline Top(T)                            & \( 0 \)                                                                         \\
+		\hline Bottom                            & \( 1 \)                                                                         \\
+		\hline Boundary condition for entry node & \( 0 \)                                                                         \\
+		\hline Initialization for internal nodes & \(\mathrm{T}\)                                                                  \\
+		\hline Finited escending chain?          & \checkmark                                                                      \\
+		\hline Transferfunction                  & \( PAVOUT[i] =  (PAVIN[i] - KILL[i]) \cup AVLOC[i]\)                            \\
+		\hline Monotone\&Distributive?           & \checkmark                                                                      \\
+		\hline AVLOC                             & {Expression is {\color{blue}locally available (AVLOC)} if downwards exposed.  } \\
+		\hline KILL                              & Expression is {\color{blue}killed ( KILL)} if any assignments to operands.      \\
+		\hline
+	\end{tabular}
+\end{center}
 
 
-   \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p84.pdf}
-         \caption{For \texttt{a+b}, the result of  Partially Available Expressions's transfer function within a basic block.}
-         \label{fig:p84}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{p84.pdf}
+	\caption{For \texttt{a+b}, the result of  Partially Available Expressions's transfer function within a basic block.}
+	\label{fig:p84}
 \end{figure}
 
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p85.pdf}
-         \caption{For \texttt{a+b}, the result Partially Available Expressions of dataflow analysis.}
-         \label{fig:p85}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p85.pdf}
+	\caption{For \texttt{a+b}, the result Partially Available Expressions of dataflow analysis.}
+	\label{fig:p85}
 \end{figure}
 
 \subsection{Finding Anticipated Expression}
 
 For PRE, care must be taken that the hoisting would do no harm: Never introduce
- a new expression along any path. Otherwise the
+a new expression along any path. Otherwise the
 hoisting will lengthen at least one trace of the program, defying optimality; even
 worse, if the hoisted instruction throws an exception, the program’s semantics
 change.
@@ -99,44 +106,44 @@ change.
 
 
 \begin{definition}{Local Anticipability(ANTLOC)}
-An expression may
-be locally anticipated in a block i if there is at least one
-computation of the expression in the block i, and if the
-commands appearing in the block before the first computation 
-of the expression do not modify its operands. 
+	An expression may
+	be locally anticipated in a block i if there is at least one
+	computation of the expression in the block i, and if the
+	commands appearing in the block before the first computation
+	of the expression do not modify its operands.
 \end{definition}
 
 
 \begin{center}
-    \begin{tabular}{|c|c|}
-   \hline Direction & backward\\
-   \hline Meet operator & \( \cap \)\\
-   \hline Lattice & \( \{ 0,1 \} \)\\
-   \hline Top(T) & \( 1 \)\\
-   \hline Boundary condition for exit node & \( 0 \) \\  
-   \hline Initialization for internal nodes & \(\mathrm{T}\) \\
-   \hline Finited escending chain? &\checkmark  \\
-   \hline Transferfunction  &  \( ANTIN[i] = ANTLOC[i] \cup (ANTOUT[i] - KILL[i])\)\\
-   \hline Monotone\&Distributive?  & \checkmark \\
-   \hline ANTLOC & Expression is locally {\color{blue}anticipated(ANTLOC))} is upward exposed.\\
-   \hline
-   \end{tabular}  
-   \end{center}
+	\begin{tabular}{|c|c|}
+		\hline Direction                         & backward                                                                    \\
+		\hline Meet operator                     & \( \cap \)                                                                  \\
+		\hline Lattice                           & \( \{ 0,1 \} \)                                                             \\
+		\hline Top(T)                            & \( 1 \)                                                                     \\
+		\hline Boundary condition for exit node  & \( 0 \)                                                                     \\
+		\hline Initialization for internal nodes & \(\mathrm{T}\)                                                              \\
+		\hline Finited escending chain?          & \checkmark                                                                  \\
+		\hline Transferfunction                  & \( ANTIN[i] = ANTLOC[i] \cup (ANTOUT[i] - KILL[i])\)                        \\
+		\hline Monotone\&Distributive?           & \checkmark                                                                  \\
+		\hline ANTLOC                            & Expression is locally {\color{blue}anticipated(ANTLOC))} is upward exposed. \\
+		\hline
+	\end{tabular}
+\end{center}
 
-   \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p86.pdf}
-         \caption{For \texttt{a+b}, the result of Anticipated Expression's transfer function within a basic block.}
-         \label{fig:p86}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{p86.pdf}
+	\caption{For \texttt{a+b}, the result of Anticipated Expression's transfer function within a basic block.}
+	\label{fig:p86}
 \end{figure}
 
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p87.pdf}
-         \caption{For \texttt{a+b}, the result Anticipated Expression of dataflow analysis.}
-         \label{fig:p87}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p87.pdf}
+	\caption{For \texttt{a+b}, the result Anticipated Expression of dataflow analysis.}
+	\label{fig:p87}
 \end{figure}
 
 
@@ -144,21 +151,21 @@ of the expression do not modify its operands.
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p88.pdf}
-         \caption{For \texttt{a+b}, \texttt{t2 = a + b} and \texttt{t3 = a + 4} are both partially redundant. But where can we insert the new computation \texttt{a + b} in order to optimally eliminate redundancy?
-         The best choice is BB1 because this wil  make \texttt{a + b} fully redundant. But if we insert to BB2 and BB3, there are some path that calculate \texttt{a + b} more than once (e.g. Entry$\rightarrow$\texttt{t1= a+b} $\rightarrow$ BB2$\rightarrow$\texttt{t2= a+b}) }
-         \label{fig:p88}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p88.pdf}
+	\caption{For \texttt{a+b}, \texttt{t2 = a + b} and \texttt{t3 = a + 4} are both partially redundant. But where can we insert the new computation \texttt{a + b} in order to optimally eliminate redundancy?
+		The best choice is BB1 because this wil  make \texttt{a + b} fully redundant. But if we insert to BB2 and BB3, there are some path that calculate \texttt{a + b} more than once (e.g. Entry$\rightarrow$\texttt{t1= a+b} $\rightarrow$ BB2$\rightarrow$\texttt{t2= a+b}) }
+	\label{fig:p88}
 \end{figure}
 
-We define "\textbf{Placement Possible }"(PP) dataflow analysis. First of all, we are only going to place computations at the end of the blocks. 
-We want to insert the computation at the earliest place where our \textbf{Placement Possible }is true. If the \textbf{Placement Possible }is true output of a block(PPOUT), it means 
+We define "\textbf{Placement Possible }"(PP) dataflow analysis. First of all, we are only going to place computations at the end of the blocks.
+We want to insert the computation at the earliest place where our \textbf{Placement Possible }is true. If the \textbf{Placement Possible }is true output of a block(PPOUT), it means
 it is fine to insert at the end of this block or earlier. If it is true athe the beginning of the block, it means we could insert it at the beginning of the block or earlier. Becuase we want to
 insert it at the end of the block, so if \textbf{Placement Possible }is true at the beginning of the block(PPIN), you won't insert it in the block, it means you need to take care of something before.
-So when PPIN is true, it really means is for every predecessor block, it is either possible to keep moving it back and make it fully redundant by placing in that block or earlier or it is not necessary because 
-it is already generatedin one of those blocks. 
+So when PPIN is true, it really means is for every predecessor block, it is either possible to keep moving it back and make it fully redundant by placing in that block or earlier or it is not necessary because
+it is already generatedin one of those blocks.
 
-We insert if PPOUT is true and either PPIN is false so we cannot move it back any further or if we locally kill it then clearly we have to insert it here because trying to insert it earlier would not work. And we only want to insert it if it is not 
+We insert if PPOUT is true and either PPIN is false so we cannot move it back any further or if we locally kill it then clearly we have to insert it here because trying to insert it earlier would not work. And we only want to insert it if it is not
 already available.
 
 
@@ -168,63 +175,63 @@ We want to delete an expression where PPIN is true (somehow we make it fully red
 For safety reasons, if we want to place at output of a block, we want to place at entry of all successors. (PPOUT)
 
 $$
-\text { PPOUT[i] }=\left\{\begin{array}{cl}
-0 & i=\text { entry } \\
-\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
-\end{array}\right.
+	\text { PPOUT[i] }=\left\{\begin{array}{cl}
+		0                                                                      & i=\text { entry }   \\
+		\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
+	\end{array}\right.
 $$
 
 
-When PPIN is true, if means 
+When PPIN is true, if means
 \begin{itemize}
-\item we have a local computation to place, or a placement at the end of this block which we can move up 
-\item  we want to move computation to output of all predecessors where expression is not already available (don’t insert at input) (for every predecessor,)
-\item we gain something by moving it up (PAVIN heuristic) (not too far)
+	\item we have a local computation to place, or a placement at the end of this block which we can move up
+	\item  we want to move computation to output of all predecessors where expression is not already available (don’t insert at input) (for every predecessor,)
+	\item we gain something by moving it up (PAVIN heuristic) (not too far)
 \end{itemize}
 
 $$
-\operatorname{PPIN}[\mathrm{i}]=\left\{\begin{array}{cc}
-0 & i=\text { exit } \\
-([\text { ANTLOC[i] } \cup \text { (PPOUT }[i]-\operatorname{KILL}[i])] & \\
-\cap \bigcap_{p \in \text { preds }(i)}(\text { PPOUT }[p] \cup \text { AVOUT }[p]) & \text { otherwise } \\
-\cap \text { PAVIN }[i]) &
-\end{array}\right.
+	\operatorname{PPIN}[\mathrm{i}]=\left\{\begin{array}{cc}
+		0                                                                                   & i=\text { exit }    \\
+		([\text { ANTLOC[i] } \cup \text { (PPOUT }[i]-\operatorname{KILL}[i])]             &                     \\
+		\cap \bigcap_{p \in \text { preds }(i)}(\text { PPOUT }[p] \cup \text { AVOUT }[p]) & \text { otherwise } \\
+		\cap \text { PAVIN }[i])                                                            &
+	\end{array}\right.
 $$
 
 
 
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p102.pdf}
-         \caption{Example for PRE for \texttt{a+b}}
-         \label{fig:p102}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p102.pdf}
+	\caption{Example for PRE for \texttt{a+b}}
+	\label{fig:p102}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-     \includegraphics[width=0.8\textwidth]{p103.pdf}
-         \caption{Example for PRE for \texttt{a+b}}
-         \label{fig:p103}
+	\centering
+	\includegraphics[width=0.8\textwidth]{p103.pdf}
+	\caption{Example for PRE for \texttt{a+b}}
+	\label{fig:p103}
 \end{figure}
 \subsubsection{Safety}
 
-It is  safe to insert only if anticipated. 
+It is  safe to insert only if anticipated.
 
 $$
-\text { PPIN[i] } \subseteq(\text { PPOUT[i] - KILL[i]) U {\color{red}ANTLOC}[i] }
+	\text { PPIN[i] } \subseteq(\text { PPOUT[i] - KILL[i]) U {\color{red}ANTLOC}[i] }
 $$
 
 
 $$
-\text { PPOUT[i] }=\left\{\begin{array}{cl}
-0 & i=\text { entry } \\
-\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
-\end{array}\right.
+	\text { PPOUT[i] }=\left\{\begin{array}{cl}
+		0                                                                      & i=\text { entry }   \\
+		\bigcap_{s \in \operatorname{succ}(i)} \operatorname{PPIN}[\mathrm{s}] & \text { otherwise }
+	\end{array}\right.
 $$
 
 $$
-{\color{red}\text{INSERT}} \subseteq \text{PPOUT} \subseteq {\color{red}\text{ANTOUT}}
+	{\color{red}\text{INSERT}} \subseteq \text{PPOUT} \subseteq {\color{red}\text{ANTOUT}}
 $$
 
 So it is safe.
@@ -273,14 +280,14 @@ On every path from an INSERT, there is a DELETE.
 % \begin{itemize}
 %     \item  Anticipated at the start of block i (somebody wants the expression) \\
 %     {\large \textbf{and}} 
-    
+
 %         \item {\large \textbf{(2a)}}  The expression must be partially
 %         available (to perhaps transform
 %         into full availability)\\
 %         {\large \textbf{or}} 
 %         \item {\large \textbf{(2b)}} The block neither kills nor
 %         computes the expression.
-   
+
 % \end{itemize}
 
 % Next, we compute PPIn[i] and PPOut[i]

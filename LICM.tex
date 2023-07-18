@@ -322,3 +322,42 @@ We can relax constraint of dominating all exits on some cases.
          \caption{Transforms for while loops.}
          \label{fig:p73}
 \end{figure}
+
+
+
+
+
+\subsection{Summary}
+
+It's common some natrual loops share the same header \ref{fig:p245-6}, from optimization's perspective, we can combine them as a whole. 
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.3\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p245.png}
+        \caption{}
+        \label{fig:p256}
+    \end{subfigure}
+    \begin{subfigure}{0.4\textwidth}
+    \centering
+        \includegraphics[width=\textwidth]{p246.png}
+        \caption{}
+        \label{fig:p246}
+    \end{subfigure}
+    
+    \caption{}
+       \label{fig:p245-6}
+\end{figure}
+
+
+\begin{lstlisting}[language=C,frame=single, caption=,label = LICM:expression1]
+for (int i = 0; i < 128; ++i)
+    for (int j = 0; j < 128; ++j)
+      body(i,j);
+  
+\end{lstlisting}
+
+
+
