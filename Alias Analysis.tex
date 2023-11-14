@@ -1,0 +1,170 @@
+\newpage
+
+\section{Alias Analysis\footnote{based on \cite{ShengHsi98:online}}}
+
+The purpose of alias analysis is to determine all possible ways a program may access some given
+memory locations. A set of pointers are said to be in an alias group if they all point to the same
+memory locations.  Alias analysis is very important in compiler theory. Some of its most notable applications
+include code optimization and security. Compiler level optimization needs pointer aliasing information to perform dead code elimination (removing code that does not affect the program’s
+result), redundant load/store instruction elimination, instruction scheduling (rearranging instructions) and more. Program security enforcement at compiler level uses alias analysis to help detect
+memory leaks and memory related security holes.
+
+
+
+\subsection{Types of Alias analysis}
+
+There are many varieties of alias analysis. They are often categorized by properties such as
+field-sensitivity, inter-procedural v.s. intra-procedural, context-sensitivity and flow-sensitivity.
+
+
+\subsubsection{Field-Sensitivity}
+
+Field-sensitivity is the strategy that governs the way alias analysis models fields in built-in or
+user defined data structures. There are three approaches to field-sensitivity – field-sensitive,
+field-insensitive and field-based. Consider the following code:
+
+\lstinline[language=C]|struct { int a , b ; } x , y ;|
+
+
+
+\begin{itemize}
+\item Field-sensitive approach models each field of each struct variable, hence creating four nodes
+(we use node to denote a pointer, variable or memory location)  \lstinline[language=C]|x.a, x.b, y.a and y.b.|
+
+\item Field-insensitive approach models each struct variable, but does not model their fields. This
+example is modeled by two nodes  \lstinline[language=C]|x.* and y.*.|
+
+\item Field-based approach models each field without modeling the struct variables. This example
+is modeled by two nodes  \lstinline[language=C]|*.a and *.b.|
+
+
+\end{itemize}    
+
+The same principle applies when dealing with arrays. Consider a C integer array int \lstinline[language=C]|a[10]|
+Field-insensitive approach models this with only one node: a[*], while field-sensitive approach
+creates ten nodes: \lstinline[language=C]|a[0], a[1], ..., a[10].|
+Clearly a field-sensitive approach provides a more fine grained model and hence better precision. However, the number of nodes increases rapidly when there are nested structs and/or
+arrays.
+
+
+\subsubsection{Intra-Procedural v.s. Inter-Procedural}
+
+An intra-procedural alias analysis analyzes the bodies of each functions. It does not consider
+how each function interact with other functions. Specifically, intra-procedural alias analysis does
+not handle pointer parameter passing or functions that return pointers. On the contrary, interprocedural alias analysis deals with the pointer behaviors due to function calls.
+
+A pseudo-code where pointer parameter passing is involved:
+
+\begin{lstlisting}[language=C]
+void fn1(int * p) { p = ...}
+void fn2 () { int * q ; fn1 ( q ) ; }
+\end{lstlisting}
+
+
+A pseudo-code where function is returning pointers:
+\begin{lstlisting}[language=C]
+    int * id ( int * p ) { return p ; }
+    void fn () {
+        int * q ;
+        q = id ( q ) ;
+    }
+\end{lstlisting}
+
+Intra-procedural is less expansive to perform, but has lower precision. It is often easier to
+implement an intra-procedural alias analysis before extending to inter-procedural alias analysis.
+Intra/inter-procedural property is highly related to context-sensitivity since a context-sensitive
+analysis has to be an inter-procedural analysis.
+
+
+\subsubsection{Context-Sensitivity}
+Context-sensitivity governs how function calls are analyzed. This property yields two types of
+alias analyses ? context-sensitive and context-insensitive alias analyses. Context-sensitive analysis
+considers the calling context (caller) when analyzing the target of a function call (callee). Consider
+the following code:
+
+
+\begin{lstlisting}[language=C]
+     int a , b ;
+     int * x ;
+    
+     void f ( void ) { * x ++; }
+    
+     void main () {
+        x = & a ;
+        f () ;
+        
+        x = & b ;
+        f () ;
+     }
+\end{lstlisting}
+
+
+
+In this code, function-f is called twice. It increases the value of variable-a the first time it
+was called, and increases the value of variable-b the second time it was called. A context-sensitive
+alias analyzer needs to have a way to create an abstract description for function-f so that every
+time it is called, the analyzer can apply the calling context to the abstract description.
+Context-sensitive provides a finer grain model of the static code hence results in higher precision. However, it increases the complexity of the analysis.
+
+
+
+
+
+\subsubsection{Flow-Sensitivity}
+
+
+Flow-sensitivity is the principle that governs wether or not an analysis takes the order of code
+into account. There are flow-sensitive and flow-insensitive analyses.
+A flow-insensitive analysis produces one set of alias result for the entire program it analyzes.
+This result is the sets of memory locations that pointers may points to at any point of the program.
+It does not consider the order of the code. A flow-sensitive analysis computes alias information
+at every point of the program. Consider the following code:
+
+
+
+\begin{lstlisting}[language=C,numbers=left,
+    numberstyle=\small\color{gray}]
+    int a , b ;
+    int * p ;
+    p = & a ;
+    p = & b ;
+\end{lstlisting}
+
+
+
+The result of a flow-insensitive analysis would be: pointer-p may points to variable-a or
+variable-b. A flow-sensitive analysis is capable to determine that between line 3 and line 4,
+pointer-p points to variable-a, and after line 4, pointer-p points to variable-b.
+Notice that the complexity of flow-sensitive analysis increases tremendously when a program
+has many conditional statements, loops or recursive functions. A complete control flow graph
+is required in order to perform flow-sensitive analysis. Therefore flow-sensitive analysis is much
+more precise, but is too expansive for most cases to perform on a whole program.
+
+
+
+
+\subsection{Alias Analysis Algorithms}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
