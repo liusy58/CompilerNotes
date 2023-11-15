@@ -10,6 +10,15 @@ result), redundant load/store instruction elimination, instruction scheduling (r
 memory leaks and memory related security holes.
 
 
+\subsection{Clients of Alias Analysis}
+
+Alias Analysis is not an optimization in itself, i.e., once alias analysis is run, it does not make the
+program run faster. A Program transformation called Client need to query alias information from
+alias analysis to create an optimized version of the program. Also, there are some other analysis
+that don’t alter the code, but make use of alias analysis to compute better dataflow information
+which can be used by other transformation. Examples of transformation clients include, Automated
+bug correction, Parallelization, Common subexpression elimination. Examples of analysis clients
+include, Slicing, Shape analysis.
 
 \subsection{Types of Alias analysis}
 
@@ -151,7 +160,113 @@ more precise, but is too expansive for most cases to perform on a whole program.
 
 
 
+\subsection{Alias Analysis in LLVM}
 
+
+
+The LLVM AliasAnalysis class  is the primary interface used by clients and implementations
+of alias analyses in the LLVM system. This class is the common interface between clients of alias
+analysis information and the implementations providing it, and is designed to support a wide range
+of implementations and clients (but currently all clients are assumed to be flow-insensitive). In
+addition to simple alias analysis information, this class exposes Mod/Ref (Modified/Referenced)
+information from those implementations which can provide it, allowing for powerful analyses and
+transformations to work well together.
+
+\subsubsection{Alias Analysis Class Overview in LLVM}
+
+The AliasAnalysis class defines the interface that the various alias analysis implementations should
+support. This class exports two important enums: AliasResult and ModeRefResult which represent
+the result of an alias query or a mod/ref query, respectively
+
+
+\vspace{1\baselineskip}
+\textbf{\large Methods in AliasAnalysis Class:}
+
+
+\vspace{1\baselineskip}
+
+
+\textbf{\large The alias method}
+
+
+\vspace{1\baselineskip}
+
+The alias method is the primary interface used to determine whether or not two memory objects alias
+each other. It takes two memory objects as input and returns MustAlias, PartialAlias, MayAlias,
+or NoAlias as appropriate.
+
+\vspace{1\baselineskip}
+
+\textbf{\large The getModRefInfo methods}
+
+\vspace{1\baselineskip}
+
+
+The getModRefInfo methods return information about whether the execution of an instruction can
+read or modify a memory location. Mod/Ref information is always conservative: if an instruction might read or write a location, ModRef is returned. The AliasAnalysis class also provides a
+getModRefInfo method for testing dependencies between function calls.
+
+
+\textbf{\large Other useful AliasAnalysis methods}
+
+
+% \vspace{1\baselineskip}
+
+\begin{itemize}
+
+
+ \item The pointsToConstantMemory method: This method returns true if pointer only points to
+unchanging memory locations (functions, constant global variables, null pointer).
+ \item The doesNotAccessMemory method: This method check whether function reads or writes to
+memory. If it never read/write to memory then it returns true.
+ \item The onlyReadsMemory method: This method returns true for a function if analysis can prove
+that the function only reads from non-volatile memory.
+
+\end{itemize}
+
+
+\subsubsection{Existing alias analysis implementations and clients in LLVM}
+
+
+\textbf{\large Available AliasAnalysis}
+
+\begin{itemize}
+ \item The -no-aa pass: An alias analysis that never returns any useful information. this pass can
+ be useful if you think that alias analysis is doing something wrong and are trying to narrow
+ down a problem
+ \item The -basicaa pass: This pass is an aggressive local analysis that knows many important facts.
+ such as different fields of a structure do not alias. This alias analysis is local per function and
+ depends on a series of heuristics to determine which pointers alias. For this analysis,
+ distinct global variables, local variable declarations, and heap memory can never
+ alias. Additionally, such values never alias the null pointer. Similarly, differing
+ structure fields and array references that are statically different do not alias. Some
+ C standard library functions are assumed to either never access program memory, or
+ only access read-only memory. Pointers that refer to constant global values, such as
+ strings, are said to point to constant memory. Finally, function calls cannot access
+ local variables that never escape from the function that allocates them.
+ \item The -globalsmodref-aa pass: This pass implements a simple context-sensitive mod/ref and
+ alias analysis for global variables.
+ \item  The -scev-aa pass: This pass implements AliasAnalysis queries by translating them into
+ ScalarEvolution queries.
+    
+\end{itemize}    
+
+
+
+
+% \subsubsection{}
+% -basic-aa is the Alias analysis in LLVM. Basic-aa is a rule based alias analysis. It uses the following
+% simple but important rules to compute alias information:
+% \begin{itemize}
+%      \item Distinct globals, stack allocations, and heap allocations can never alias.
+%      \item Globals, stack allocations, and heap allocations never alias the null pointer.
+%      \item Different fields of a structure do not alias.
+%      \item Indexes into arrays with statically differing subscripts cannot alias.
+%      \item Many common standard C library functions never access memory or only read memory.
+%      \item Pointers that obviously point to constant globals “pointToConstantMemory”.
+%      \item Function calls can not modify or references stack allocations if they never escape from the
+%     function that allocates them (a common case for automatic arrays).
+% \end{itemize}    
 
 
 
