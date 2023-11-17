@@ -243,7 +243,7 @@ that the function only reads from non-volatile memory.
  C standard library functions are assumed to either never access program memory, or
  only access read-only memory. Pointers that refer to constant global values, such as
  strings, are said to point to constant memory. Finally, function calls cannot access
- local variables that never escape from the function that allocates them.
+ local variables that never escape from the function that allocates them.\cite{AnEmpiri85:online}
  \item The -globalsmodref-aa pass: This pass implements a simple context-sensitive mod/ref and
  alias analysis for global variables.
  \item  The -scev-aa pass: This pass implements AliasAnalysis queries by translating them into

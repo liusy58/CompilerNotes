@@ -1,0 +1,133 @@
+\newpage 
+
+
+\section{Early Optimizations}
+
+"Optimization" is a misnomer—only very rarely
+does applying optimizations to a program result in object code whose performance
+is optimal, by any measure. Rather, optimizations generally improve performance,
+sometimes substantially, although it is entirely possible that they may decrease it or
+make no difference for some (or even all) possible inputs to a given program .
+
+
+
+\subsection{Constant-Expression Evaluation(Constant Folding)}
+
+
+
+
+ConstantFoldInstruction -> PHI?
+                        -> 
+
+
+
+
+
+\subsection{Scalar Replacement of Aggregates}
+
+
+The normal goal of this pass is to replace small, fixed-size aggregate objects (e.g., structures or small
+constant-size arrays) with separate variables corresponding to the fields of the original object. The primary benefit
+of this pass is that it allows global dataflow optimizations to be applied to fields of aggregate objects.
+
+
+
+\subsubsection{High-level Algorithm \footnote{Copied from \url{https://misailo.web.engr.illinois.edu/courses/526-sp20/mp1.pdf}}}
+
+
+
+The top-level function for your pass should iterate the following two steps until no more changes happen:
+
+\begin{itemize}
+
+    \item Promote some scalar allocas to virtual registers (equivalent to one pass of mem2reg).
+    \item Replace some allocas with allocas of the individual fields (i.e., scalar-expand the original allocas).
+    
+    
+\end{itemize}    
+
+
+Here are the major requirements:
+
+\begin{itemize}
+    % \lstinline|int main() { return 0; }|
+
+
+\item The function \lstinline|PromoteMemToReg(const std::vector<AllocaInst*> &Allocas, |
+\lstinline|DominatorTree &DT,AliasSetTracker *AST = 0)| invokes the mem2reg pass functionality directly. You can call it within your
+pass to satisfy the first of the two steps, above
+
+\item An object allocated using an \lstinline|alloca| instruction is promotable to live in a register if the alloca satisfies all
+these requirements:
+
+\begin{itemize}
+\item  (P1) The alloca is a “first-class” type, which you can approximate conservatively with
+\item  (P2) The alloca is only used in a load or store instruction and the instruction satisfies \lstinline|!isVolatile().|
+
+Technically, the use kind (U2) below is also permissible, but the LLVM version does not allow this, so the
+assertion of \lstinline|isAllocaPromotable(const AllocaInst)| will fail if you try to permit it.
+
+
+\end{itemize}    
+
+\end{itemize}
+
+The rest of this section describes the algorithm for the second step above, i.e., the scalar-replacement-of aggregates step.
+
+\begin{itemize}
+\item only need to consider alloca instructions that allocate an object of a structure type
+\item An alloca instruction can be eliminated if the resulting pointer ptr is used only in these two ways:
+\begin{itemize}
+    \item (U1) In a getelementptr instruction that satisfies both these conditions:
+    \begin{itemize}
+        \item It is of the form: \lstinline|getelementptr ptr, 0, constant[, ... constant]|
+        \item The result of the getelementptr is only used in instructions of type U1 or U2, or as the pointer
+        argument of a load or store instruction, i.e., the pointer stored into (not the value being stored).
+
+    \end{itemize}  
+    \item (U2) In a \lstinline|eq| or \lstinline|ne| comparison instruction, where the other operand is the \lstinline|NULL| pointer value.
+\end{itemize}    
+
+\item In order to eliminate an instruction M, it should be replaced with separate \lstinline|alloca| instructions, one for each
+field of the original object. These alloca operations should be placed at the entry to the current function.
+
+\item Each use of the pointer returned by M must be replaced appropriately. You have to figure out how each of
+the two kinds of uses listed above should be replaced.
+
+\item Because there can be structures nested inside structures, a single scalar-replacement step of your algorithm
+must iterate until no more structure allocations can be eliminated (in addition to the outer iteration with
+mem2reg).
+
+\item For efficiency, don’t simply repeat your entire algorithm until nothing changes. Instead, use a
+worklist containing suitable items and repeat until the worklist is empty.
+
+
+\end{itemize}    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
