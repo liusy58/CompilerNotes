@@ -32,7 +32,7 @@ of this pass is that it allows global dataflow optimizations to be applied to fi
 
 
 
-\subsubsection{High-level Algorithm \footnote{Copied from \url{https://misailo.web.engr.illinois.edu/courses/526-sp20/mp1.pdf}}}
+\subsubsection{Scalar Replacement of Aggregates in LLVM \footnote{Copied from \url{https://misailo.web.engr.illinois.edu/courses/526-sp20/mp1.pdf}}}
 
 
 
@@ -103,6 +103,81 @@ worklist containing suitable items and repeat until the worklist is empty.
 
 
 \end{itemize}    
+
+
+
+% \begin{algorithm}[hbt!]
+%     \caption{runOnAlloca}\label{alg:runOnAlloca}
+%     \KwData{AI: AllocaInst}
+%     \State{Skip when 1. AI.use_empty() 2. arrayAllocation 3. vector type 4. }
+%     \State{1. build AllocaSlices}
+%     \State{2. splitAlloca}
+%     \State{3. }
+% \end{algorithm}
+
+
+
+% \begin{algorithm}[hbt!]
+%     \caption{SROA}\label{alg:SROA}
+%     \KwData{AS: slices of an alloca which are formed by its various uses}
+    
+%     \While{$N \neq 0$}{
+%   \eIf{$N$ is even}{
+%     $X \gets X \times X$\;
+%     $N \gets \frac{N}{2} $ \Comment*[r]{This is a comment}
+%   }{\If{$N$ is odd}{
+%       $y \gets y \times X$\;
+%       $N \gets N - 1$\;
+%     }
+%   }
+% }
+
+
+
+\begin{algorithm}[H]
+	\caption{SROA}\label{alg:SROA}
+	\begin{algorithmic}
+        \While{!Worklist.empty()}
+        \State{$I \gets Worklist.pop\_back()$}
+        \State{runOnAlloca(I)}
+        \State{deleteDeadInstructions}
+        \State{promoteAllocas()}
+        \EndWhile
+	\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+	\caption{runOnAlloca}\label{alg:runOnAlloca}
+	\begin{algorithmic}
+       \State{Build the slices of the allocInst}
+       \State{splitAlloca (normalize the slice)}
+	\end{algorithmic}
+\end{algorithm}
+
+
+
+\begin{algorithm}[H]
+	\caption{splitAlloca}\label{alg:splitAlloca}
+	\begin{algorithmic}
+    \State{presplitLoadsAndStores: change[4,12) to [4,8)+[8,12)...}    
+    \State{rewritePartition}
+	\end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+	\caption{rewritePartition}\label{alg:rewritePartition}
+	\begin{algorithmic}
+    \State{Create a new allocInst}
+    \State{add old allocInst to DeadInsts}
+	\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Algebraic Simplifications and Reassociation}
+
+
 
 
 
